@@ -184,7 +184,7 @@ def determine_instrument_type(object):
 def find_description(identifier,output='path',directory=None):
     """ Finds an instrument description in pyMez/Instruments given an identifier, 
     outputs a path or the file. Right now this outputs the first sheet that matches the identifier"""
-    if type(identifier) in StringTypes:
+    if isinstance(identifier,str):
         # Now read in all the Instrument sheets and look for a match
         if directory is None:
             instrument_folder=os.path.join(PYMEASURE_ROOT,'Instruments')

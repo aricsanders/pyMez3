@@ -584,10 +584,10 @@ def AsciiDataTable_to_ExcelFile(ascii_data_table,file_path=None):
 def S2PV1_to_XmlDataTable(s2p,**options):
     """Transforms a s2p's sparameters to a XmlDataTable. Converts the format to #GHz DB first"""
     defaults={"specific_descriptor":s2p.options["specific_descriptor"],
-                     "general_descriptor":s2p.options["general_descriptor"],
+                      "general_descriptor":s2p.options["general_descriptor"],
                       "directory":s2p.options["directory"],
-              "style_sheet":"../XSL/S2P_DB_STYLE.xsl"
-                     }
+                      "style_sheet":"../XSL/S2P_DB_STYLE.xsl",
+                      "format":"DB"}
     XML_options={}
     for key,value in defaults.items():
         XML_options[key]=value
@@ -605,7 +605,7 @@ def S2PV1_to_XmlDataTable(s2p,**options):
             for index,line in enumerate(s2p.comments):
                 key="Comments_{0:0>3}".format(index)
                 data_description[key]=line[0]
-    s2p.change_data_format(new_format='DB')
+    s2p.change_data_format(new_format=XML_options["format"])
     s2p.change_frequency_units('GHz')
     data_dictionary={"Data_Description":data_description,"Data":s2p.get_data_dictionary_list()}
     XML_options["data_dictionary"]=data_dictionary
