@@ -3325,14 +3325,14 @@ Instrument states, instrument sheets and file indices.</p>
 
 <span class="k">def</span> <span class="nf">test_InstrumentSheet</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot; A test of the InstrumentSheet class&quot;&quot;&quot;</span>
-    <span class="n">instrument_sheet</span><span class="o">=</span><span class="n">InstrumentSheet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PYMEASURE_ROOT</span><span class="p">,</span><span class="s1">&#39;Instruments&#39;</span><span class="p">,</span><span class="n">INSTRUMENT_SHEETS</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">instrument_sheet</span><span class="o">=</span><span class="n">InstrumentSheet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TESTS_DIRECTORY</span><span class="p">,</span><span class="s1">&#39;../../../Instruments&#39;</span><span class="p">,</span><span class="n">INSTRUMENT_SHEETS</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
     <span class="n">tags</span><span class="o">=</span><span class="n">instrument_sheet</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s1">&#39;Instrument_Type&#39;</span><span class="p">)</span>
     <span class="n">value</span><span class="o">=</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">childNodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">]</span>
     <span class="k">print</span> <span class="n">value</span>
     <span class="k">print</span> <span class="nb">dir</span><span class="p">(</span><span class="n">instrument_sheet</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">instrument_sheet</span><span class="o">.</span><span class="n">get_image_path</span><span class="p">()</span>
     <span class="k">print</span> <span class="n">instrument_sheet</span><span class="o">.</span><span class="n">commands</span>
-    <span class="k">print</span> <span class="nb">str</span><span class="p">(</span><span class="n">instrument_sheet</span><span class="o">.</span><span class="n">to_HTML</span><span class="p">())</span>
+    <span class="k">print</span> <span class="nb">str</span><span class="p">(</span><span class="n">instrument_sheet</span><span class="o">.</span><span class="n">to_HTML</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">XSLT_REPOSITORY</span><span class="p">,</span><span class="s2">&quot;DEFAULT_INSTRUMENT_STYLE.xsl&quot;</span><span class="p">)))</span>
     <span class="n">instrument_sheet</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 <span class="k">def</span> <span class="nf">test_dictionary_to_xmlchunk</span><span class="p">(</span><span class="n">dictionary</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;li&quot;</span><span class="p">:</span><span class="s2">&quot;My list Element&quot;</span><span class="p">}):</span>
     <span class="sd">&quot;&quot;&quot;Tests the function dictionary_to_xmlchunk&quot;&quot;&quot;</span>
@@ -3343,20 +3343,20 @@ Instrument states, instrument sheets and file indices.</p>
 <span class="c1">#-----------------------------------------------------------------------------</span>
 <span class="c1"># Module Runner</span>
 <span class="k">if</span> <span class="n">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="c1">#test_XMLModel()</span>
+    <span class="n">test_XMLModel</span><span class="p">()</span>
     <span class="n">test_XMLLog</span><span class="p">()</span>
-    <span class="c1">#test_log_addition()</span>
-    <span class="c1">#test_EndOfDayXMLLog()</span>
-    <span class="c1">#test_show()</span>
-    <span class="c1">#test_to_HTML()</span>
+    <span class="n">test_log_addition</span><span class="p">()</span>
+    <span class="n">test_EndOfDayXMLLog</span><span class="p">()</span>
+    <span class="n">test_show</span><span class="p">()</span>
+    <span class="n">test_to_HTML</span><span class="p">()</span>
     <span class="n">test_DataTable</span><span class="p">()</span>
-    <span class="c1">#test_get_header()</span>
-    <span class="c1">#test_open_measurement()</span>
-    <span class="c1">#test_get_attribute_names()</span>
+    <span class="n">test_get_header</span><span class="p">()</span>
+    <span class="n">test_open_measurement</span><span class="p">()</span>
+    <span class="n">test_get_attribute_names</span><span class="p">()</span>
     <span class="c1">#test_FileRegister()</span>
     <span class="c1">#test_Metadata()</span>
     <span class="c1">#metadata_robot()</span>
-    <span class="c1">#test_InstrumentSheet()</span>
+    <span class="n">test_InstrumentSheet</span><span class="p">()</span>
     <span class="n">test_dictionary_to_xmlchunk</span><span class="p">()</span>
 </pre></div>
 
@@ -3955,14 +3955,14 @@ same tagname). If no metadata file is given it just writes them to a file in
   <div id="source-pyMez.Code.DataHandlers.XMLModels.test_InstrumentSheet" class="source">
     <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">test_InstrumentSheet</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot; A test of the InstrumentSheet class&quot;&quot;&quot;</span>
-    <span class="n">instrument_sheet</span><span class="o">=</span><span class="n">InstrumentSheet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PYMEASURE_ROOT</span><span class="p">,</span><span class="s1">&#39;Instruments&#39;</span><span class="p">,</span><span class="n">INSTRUMENT_SHEETS</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">instrument_sheet</span><span class="o">=</span><span class="n">InstrumentSheet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TESTS_DIRECTORY</span><span class="p">,</span><span class="s1">&#39;../../../Instruments&#39;</span><span class="p">,</span><span class="n">INSTRUMENT_SHEETS</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
     <span class="n">tags</span><span class="o">=</span><span class="n">instrument_sheet</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s1">&#39;Instrument_Type&#39;</span><span class="p">)</span>
     <span class="n">value</span><span class="o">=</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">childNodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">]</span>
     <span class="k">print</span> <span class="n">value</span>
     <span class="k">print</span> <span class="nb">dir</span><span class="p">(</span><span class="n">instrument_sheet</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">instrument_sheet</span><span class="o">.</span><span class="n">get_image_path</span><span class="p">()</span>
     <span class="k">print</span> <span class="n">instrument_sheet</span><span class="o">.</span><span class="n">commands</span>
-    <span class="k">print</span> <span class="nb">str</span><span class="p">(</span><span class="n">instrument_sheet</span><span class="o">.</span><span class="n">to_HTML</span><span class="p">())</span>
+    <span class="k">print</span> <span class="nb">str</span><span class="p">(</span><span class="n">instrument_sheet</span><span class="o">.</span><span class="n">to_HTML</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">XSLT_REPOSITORY</span><span class="p">,</span><span class="s2">&quot;DEFAULT_INSTRUMENT_STYLE.xsl&quot;</span><span class="p">)))</span>
     <span class="n">instrument_sheet</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 

@@ -121,6 +121,54 @@ def visit_and_print_all_nodes(graph):
         print((graph.data))
 
 
+def to_node_name(node_data):
+    """Creates a node name given an input object, does a bit of silly type selecting and name rearranging. This matches for 75%
+    of the cases. There are a lot of user defined nodes without a clear path to generate a name. For instance the DataTableGraph
+    node HpFile, does not save with a .hp extension so it would be auto named TxtFile if was only selected by the path name.
+    If it is auto selected it returns StringList because it is of the format ["file_path","schema_path"] """
+
+    # we retrieve the text version of the class name
+    class_name = node_data.__class__.__name__
+    node_name = class_name
+    # now for dict and list types we want to inspect the first Element to see what it is
+    if re.match('list', class_name):
+        node_name = "List"
+        try:
+            element_class_name = node_data[0].__class__.__name__
+            node_name = element_class_name + node_name
+        except:
+            pass
+    elif re.match('dict', class_name):
+        node_name = "Dictionary"
+        try:
+            element_class_name = list(node_data.values())[0].__class__.__name__
+            node_name = element_class_name + node_name
+        except:
+            pass
+    elif re.match('str', class_name):
+        node_name = "String"
+        # Now we have to check if it is an existing file name
+        if os.path.isfile(node_data):
+            node_name = "File"
+            extension = ""
+            try:
+                if re.search("\.", node_data):
+                    extension = node_data.split(".")[-1]
+                    node_name = extension.title() + node_name
+            except:
+                pass
+        elif fnmatch.fnmatch(node_data, "*.*"):
+            node_name = "File"
+            try:
+                if re.search("\.", node_data):
+                    extension = node_data.split(".")[-1]
+                    node_name = extension.title() + node_name
+            except:
+                pass
+    node_name = node_name.replace("str", "String").replace("dict", "Dictionary")
+    return (node_name)
+
+
 def TableGraph_to_Links(table_graph, **options):
     """Converts a table graph to a set of download links with embedded data in them"""
     defaults = {"base_name": None,
@@ -632,7 +680,7 @@ class Graph(object):
             networkx.draw_networkx(self.display_graph, arrows=show_options["arrows"], node_color=node_colors,
                                    node_size=show_options["node_size"], font_size=show_options["font_size"],
                                    pos=self.display_layout)
-
+        plt.axis('off')
         plt.suptitle(self.options["graph_name"])
         if show_options["file_name"] is None:
             file_name = auto_name(specific_descriptor=show_options["specific_descriptor"],

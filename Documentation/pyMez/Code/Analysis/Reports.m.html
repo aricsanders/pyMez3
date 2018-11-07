@@ -1197,6 +1197,7 @@ table {
     <li class="mono"><a href="#pyMez.Code.Analysis.Reports.EXTENSION_PATTERN">EXTENSION_PATTERN</a></li>
     <li class="mono"><a href="#pyMez.Code.Analysis.Reports.FORMATS">FORMATS</a></li>
     <li class="mono"><a href="#pyMez.Code.Analysis.Reports.FREQUENCY_UNITS">FREQUENCY_UNITS</a></li>
+    <li class="mono"><a href="#pyMez.Code.Analysis.Reports.GENERAL_DESCRIPTORS">GENERAL_DESCRIPTORS</a></li>
     <li class="mono"><a href="#pyMez.Code.Analysis.Reports.GET_STATS_FIELDS">GET_STATS_FIELDS</a></li>
     <li class="mono"><a href="#pyMez.Code.Analysis.Reports.HTML_TEMPLATE_DIRECTORY">HTML_TEMPLATE_DIRECTORY</a></li>
     <li class="mono"><a href="#pyMez.Code.Analysis.Reports.IMAGE_FILE_EXTENSIONS">IMAGE_FILE_EXTENSIONS</a></li>
@@ -1251,6 +1252,7 @@ table {
     <li class="mono"><a href="#pyMez.Code.Analysis.Reports.WKHTML_PATH">WKHTML_PATH</a></li>
     <li class="mono"><a href="#pyMez.Code.Analysis.Reports.XSLT_CAPABLE">XSLT_CAPABLE</a></li>
     <li class="mono"><a href="#pyMez.Code.Analysis.Reports.XSLT_REPOSITORY">XSLT_REPOSITORY</a></li>
+    <li class="mono"><a href="#pyMez.Code.Analysis.Reports.type_names">type_names</a></li>
   </ul>
 
 	  </div>
@@ -1966,7 +1968,7 @@ basic html reports and the checkstandard reporting process.</p>
       
   <div class="item">
     <div class="name def" id="pyMez.Code.Analysis.Reports.test_CheckStandardReport">
-    <p>def <span class="ident">test_CheckStandardReport</span>(</p><p>raw_file_path=&#39;C:\\ProgramData\\Anaconda2\\lib\\site-packages\\pyMez\\Code\\DataHandlers\\Tests\\CTN208.R1_062614&#39;)</p>
+    <p>def <span class="ident">test_CheckStandardReport</span>(</p><p>raw_file_path=&#39;C:\\Users\\sandersa\\PyCharmProjects\\pyMez3\\Code\\DataHandlers\\Tests\\CTN208.R1_062614&#39;)</p>
     </div>
     
 
@@ -2697,7 +2699,7 @@ report</p></div>
     <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">add_body</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Adds a body tag to the model if it does not exist&quot;&quot;&quot;</span>
     <span class="n">body</span><span class="o">=</span><span class="n">make_html_element</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="s2">&quot;body&quot;</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-    <span class="n">tags</span><span class="o">=</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">getchildren</span><span class="p">())</span>
+    <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">getchildren</span><span class="p">()]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;body&quot;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -3068,20 +3070,20 @@ lxml.html.HtmlElement it appends it</p></div>
 <span class="sd">    &quot;attribute_dictionary&quot;:{&quot;attribute_name&quot;:&quot;attribute_value&quot;}, and if it is a</span>
 <span class="sd">    lxml.html.HtmlElement it appends it&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">tags</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">getchildren</span><span class="p">())</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">getchildren</span><span class="p">()]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;body&quot;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
             <span class="n">body</span> <span class="o">=</span> <span class="n">make_html_element</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="s2">&quot;body&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Body tag was not present adding it&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="ow">is</span> <span class="n">StringType</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">StringType</span><span class="p">):</span>
             <span class="n">new_element</span><span class="o">=</span><span class="n">lxml</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">fragment_fromstring</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="ow">is</span> <span class="n">DictionaryType</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">DictionaryType</span><span class="p">):</span>
             <span class="n">new_element</span><span class="o">=</span><span class="n">make_html_element</span><span class="p">(</span><span class="o">**</span><span class="n">element</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">HtmlElement</span><span class="p">]:</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span><span class="n">lxml</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">HtmlElement</span><span class="p">):</span>
             <span class="n">new_element</span><span class="o">=</span><span class="n">element</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_element</span><span class="p">)</span>
     <span class="k">except</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Could not add {0} to body&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">element</span><span class="p">))</span>
+        <span class="k">print</span><span class="p">((</span><span class="s2">&quot;Could not add {0} to body&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">element</span><span class="p">)))</span>
 </pre></div>
 
   </div>
@@ -3115,20 +3117,20 @@ lxml.html.HtmlElement it appends it</p></div>
 <span class="sd">    &quot;attribute_dictionary&quot;:{&quot;attribute_name&quot;:&quot;attribute_value&quot;}, and if it is a</span>
 <span class="sd">    lxml.html.HtmlElement it appends it&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">tags</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">getchildren</span><span class="p">())</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">getchildren</span><span class="p">()]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;head&quot;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
             <span class="n">head</span> <span class="o">=</span> <span class="n">make_html_element</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="s2">&quot;head&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Head tag was not present adding it&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">head</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="ow">is</span> <span class="n">StringType</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">StringType</span><span class="p">):</span>
             <span class="n">new_element</span><span class="o">=</span><span class="n">lxml</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">fragment_fromstring</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="ow">is</span> <span class="n">DictionaryType</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">DictionaryType</span><span class="p">):</span>
             <span class="n">new_element</span><span class="o">=</span><span class="n">make_html_element</span><span class="p">(</span><span class="o">**</span><span class="n">element</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">HtmlElement</span><span class="p">]:</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span><span class="n">lxml</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">HtmlElement</span><span class="p">):</span>
             <span class="n">new_element</span><span class="o">=</span><span class="n">element</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">head</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_element</span><span class="p">)</span>
     <span class="k">except</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Could not add {0} to head&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">element</span><span class="p">))</span>
+        <span class="k">print</span><span class="p">((</span><span class="s2">&quot;Could not add {0} to head&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">element</span><span class="p">)))</span>
 </pre></div>
 
   </div>
@@ -3586,7 +3588,7 @@ or a Ndarray of the image values. The image is in a <figure id=figure_id> tag</p
     <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">file_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="o">**</span><span class="n">temp_options</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Saves the html file, provide file path to save as, or temp_options&quot;&quot;&quot;</span>
     <span class="n">original_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">temp_options</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">temp_options</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
     <span class="k">if</span> <span class="n">file_path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">file_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span>
@@ -3794,9 +3796,9 @@ the resulting file to self.path with pdf as the extension</p></div>
               <span class="s2">&quot;head&quot;</span><span class="p">:</span><span class="bp">None</span>
               <span class="p">}</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">=</span><span class="p">{}</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">defaults</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">defaults</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
     <span class="c1"># Define Method Aliases if they are available</span>
     <span class="k">if</span> <span class="n">METHOD_ALIASES</span><span class="p">:</span>
@@ -3814,10 +3816,10 @@ the resulting file to self.path with pdf as the extension</p></div>
             <span class="n">elements</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;head&quot;</span><span class="p">,</span><span class="s2">&quot;body&quot;</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">elements</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="n">element</span><span class="p">]:</span>
-                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="ow">is</span> <span class="n">StringType</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">StringType</span><span class="p">):</span>
                         <span class="n">new_element</span><span class="o">=</span><span class="n">lxml</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">fragment_fromstring</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="n">element</span><span class="p">])</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_element</span><span class="p">)</span>
-                    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="ow">is</span> <span class="n">lxml</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">Element</span><span class="p">:</span>
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">lxml</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">Element</span><span class="p">):</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="n">element</span><span class="p">])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">]:</span>
@@ -3862,7 +3864,7 @@ the resulting file to self.path with pdf as the extension</p></div>
     <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">add_body</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Adds a body tag to the model if it does not exist&quot;&quot;&quot;</span>
     <span class="n">body</span><span class="o">=</span><span class="n">make_html_element</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="s2">&quot;body&quot;</span><span class="p">,</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
-    <span class="n">tags</span><span class="o">=</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">getchildren</span><span class="p">())</span>
+    <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">getchildren</span><span class="p">()]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;body&quot;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -4024,20 +4026,20 @@ lxml.html.HtmlElement it appends it</p></div>
 <span class="sd">    &quot;attribute_dictionary&quot;:{&quot;attribute_name&quot;:&quot;attribute_value&quot;}, and if it is a</span>
 <span class="sd">    lxml.html.HtmlElement it appends it&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">tags</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">getchildren</span><span class="p">())</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">getchildren</span><span class="p">()]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;body&quot;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
             <span class="n">body</span> <span class="o">=</span> <span class="n">make_html_element</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="s2">&quot;body&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Body tag was not present adding it&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="ow">is</span> <span class="n">StringType</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">StringType</span><span class="p">):</span>
             <span class="n">new_element</span><span class="o">=</span><span class="n">lxml</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">fragment_fromstring</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="ow">is</span> <span class="n">DictionaryType</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">DictionaryType</span><span class="p">):</span>
             <span class="n">new_element</span><span class="o">=</span><span class="n">make_html_element</span><span class="p">(</span><span class="o">**</span><span class="n">element</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">HtmlElement</span><span class="p">]:</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span><span class="n">lxml</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">HtmlElement</span><span class="p">):</span>
             <span class="n">new_element</span><span class="o">=</span><span class="n">element</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_element</span><span class="p">)</span>
     <span class="k">except</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Could not add {0} to body&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">element</span><span class="p">))</span>
+        <span class="k">print</span><span class="p">((</span><span class="s2">&quot;Could not add {0} to body&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">element</span><span class="p">)))</span>
 </pre></div>
 
   </div>
@@ -4067,20 +4069,20 @@ lxml.html.HtmlElement it appends it</p></div>
 <span class="sd">    &quot;attribute_dictionary&quot;:{&quot;attribute_name&quot;:&quot;attribute_value&quot;}, and if it is a</span>
 <span class="sd">    lxml.html.HtmlElement it appends it&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">tags</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">getchildren</span><span class="p">())</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">getchildren</span><span class="p">()]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="s2">&quot;head&quot;</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
             <span class="n">head</span> <span class="o">=</span> <span class="n">make_html_element</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="s2">&quot;head&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Head tag was not present adding it&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">head</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="ow">is</span> <span class="n">StringType</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">StringType</span><span class="p">):</span>
             <span class="n">new_element</span><span class="o">=</span><span class="n">lxml</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">fragment_fromstring</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="ow">is</span> <span class="n">DictionaryType</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">DictionaryType</span><span class="p">):</span>
             <span class="n">new_element</span><span class="o">=</span><span class="n">make_html_element</span><span class="p">(</span><span class="o">**</span><span class="n">element</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="n">lxml</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">HtmlElement</span><span class="p">]:</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span><span class="n">lxml</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">HtmlElement</span><span class="p">):</span>
             <span class="n">new_element</span><span class="o">=</span><span class="n">element</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">head</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_element</span><span class="p">)</span>
     <span class="k">except</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Could not add {0} to head&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">element</span><span class="p">))</span>
+        <span class="k">print</span><span class="p">((</span><span class="s2">&quot;Could not add {0} to head&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">element</span><span class="p">)))</span>
 </pre></div>
 
   </div>
@@ -4203,7 +4205,7 @@ or a Ndarray of the image values. The image is in a <figure id=figure_id> tag</p
     <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">file_path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="o">**</span><span class="n">temp_options</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Saves the html file, provide file path to save as, or temp_options&quot;&quot;&quot;</span>
     <span class="n">original_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">temp_options</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">temp_options</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
     <span class="k">if</span> <span class="n">file_path</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">file_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span>
@@ -4480,6 +4482,14 @@ the resulting file to self.path with pdf as the extension</p></div>
       </div>
       <div class="item">
       <p id="pyMez.Code.Analysis.Reports.FREQUENCY_UNITS" class="name">var <span class="ident">FREQUENCY_UNITS</span></p>
+      
+  
+  <div class="source_cont">
+</div>
+
+      </div>
+      <div class="item">
+      <p id="pyMez.Code.Analysis.Reports.GENERAL_DESCRIPTORS" class="name">var <span class="ident">GENERAL_DESCRIPTORS</span></p>
       
   
   <div class="source_cont">
@@ -4912,6 +4922,14 @@ the resulting file to self.path with pdf as the extension</p></div>
       </div>
       <div class="item">
       <p id="pyMez.Code.Analysis.Reports.XSLT_REPOSITORY" class="name">var <span class="ident">XSLT_REPOSITORY</span></p>
+      
+  
+  <div class="source_cont">
+</div>
+
+      </div>
+      <div class="item">
+      <p id="pyMez.Code.Analysis.Reports.type_names" class="name">var <span class="ident">type_names</span></p>
       
   
   <div class="source_cont">

@@ -11783,8 +11783,8 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># first we import the ZipModels module.</span>
-<span class="kn">from</span> <span class="nn">pyMez.Code.DataHandlers.ZipModels</span> <span class="kn">import</span> <span class="o">*</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># first we import the ZipModels module.</span>
+<span class="kn">from</span> <span class="nn">pyMez.Code.DataHandlers.ZipModels</span> <span class="k">import</span> <span class="o">*</span>
 </pre></div>
 
 </div>
@@ -11799,24 +11799,25 @@ div#notebook {
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Importing pyMez, this should take roughly 30 seconds
 Importing Code.DataHandlers.GeneralModels
-It took 2.529 s to import Code.DataHandlers.GeneralModels
+It took 0.603034 s to import Code.DataHandlers.GeneralModels
 Importing Code.DataHandlers.HTMLModels
-It took 0.42 s to import Code.DataHandlers.HTMLModels
+It took 0.196011 s to import Code.DataHandlers.HTMLModels
 Importing Code.DataHandlers.NISTModels
-It took 5.855 s to import Code.DataHandlers.NISTModels
+The module smithplot was not found,please put it on the python path
+It took 1.061061 s to import Code.DataHandlers.NISTModels
 Importing Code.DataHandlers.TouchstoneModels
-It took 0.008 s to import Code.DataHandlers.TouchstoneModels
+It took 0.001 s to import Code.DataHandlers.TouchstoneModels
 Importing Code.DataHandlers.XMLModels
-It took 0.214 s to import Code.DataHandlers.XMLModels
+It took 0.267015 s to import Code.DataHandlers.XMLModels
 Importing Code.DataHandlers.ZipModels
-It took 0.048 s to import Code.DataHandlers.ZipModels
+It took 0.017001 s to import Code.DataHandlers.ZipModels
 Importing Code.InstrumentControl.Experiments
-It took 1.029 s to import Code.InstrumentControl.Experiments
+It took 3.578205 s to import Code.InstrumentControl.Experiments
 Importing Code.InstrumentControl.Instruments
-It took 0.011 s to import Code.InstrumentControl.Instruments
+It took 0.001 s to import Code.InstrumentControl.Instruments
 Importing Code.Utils.Names
-It took 0.009 s to import Code.Utils.Names
-It took 10.123 s to import all of the active modules
+It took 0.0 s to import Code.Utils.Names
+It took 5.724327 s to import all of the active modules
 </pre>
 </div>
 </div>
@@ -11830,7 +11831,7 @@ It took 10.123 s to import all of the active modules
 <div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># a new zip archive</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># a new zip archive</span>
 <span class="n">new_zip</span><span class="o">=</span><span class="n">ZipArchive</span><span class="p">()</span>
 </pre></div>
 
@@ -11844,7 +11845,7 @@ It took 10.123 s to import all of the active modules
 <div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># it has a default name</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># it has a default name</span>
 <span class="n">new_zip</span><span class="o">.</span><span class="n">path</span>
 </pre></div>
 
@@ -11860,7 +11861,7 @@ It took 10.123 s to import all of the active modules
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>&#39;Data_Archive_20180714_002.zip&#39;</pre>
+<pre>&#39;Data_Archive_20181104_001.zip&#39;</pre>
 </div>
 
 </div>
@@ -11874,7 +11875,7 @@ It took 10.123 s to import all of the active modules
 <div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># we can add a file to the zip archive</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># we can add a file to the zip archive</span>
 <span class="n">file_to_add</span><span class="o">=</span><span class="s2">r&quot;./Zip_Example_Files/WR15_isolation.s2p&quot;</span>
 </pre></div>
 
@@ -11888,7 +11889,7 @@ It took 10.123 s to import all of the active modules
 <div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># just provide the path to the file to add</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># just provide the path to the file to add</span>
 <span class="n">new_zip</span><span class="o">.</span><span class="n">add_file</span><span class="p">(</span><span class="n">file_to_add</span><span class="p">)</span>
 </pre></div>
 
@@ -11902,7 +11903,7 @@ It took 10.123 s to import all of the active modules
 <div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># now the files are listed in the attribute files</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># now the files are listed in the attribute files</span>
 <span class="n">new_zip</span><span class="o">.</span><span class="n">files</span>
 </pre></div>
 
@@ -11932,7 +11933,7 @@ It took 10.123 s to import all of the active modules
 <div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># we can add files of any type</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># we can add files of any type</span>
 <span class="n">new_zip</span><span class="o">.</span><span class="n">add_file</span><span class="p">(</span><span class="s2">r&quot;./Zip_Example_Files/WR15_Compare_Corrected_Loads.png&quot;</span><span class="p">)</span>
 </pre></div>
 
@@ -11946,7 +11947,7 @@ It took 10.123 s to import all of the active modules
 <div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">new_zip</span><span class="o">.</span><span class="n">files</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">new_zip</span><span class="o">.</span><span class="n">files</span>
 </pre></div>
 
 </div>
@@ -11975,7 +11976,7 @@ It took 10.123 s to import all of the active modules
 <div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># we can add all the files in a directory</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># we can add all the files in a directory</span>
 <span class="n">new_zip</span><span class="o">.</span><span class="n">add_all_from_directory</span><span class="p">(</span><span class="s2">r&quot;.\Zip_Example_Files\Mulitple_Files&quot;</span><span class="p">)</span>
 </pre></div>
 
@@ -11989,7 +11990,7 @@ It took 10.123 s to import all of the active modules
 <div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">new_zip</span><span class="o">.</span><span class="n">files</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">new_zip</span><span class="o">.</span><span class="n">files</span>
 </pre></div>
 
 </div>
@@ -12023,7 +12024,7 @@ It took 10.123 s to import all of the active modules
 <div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># we can create a string and add it as a new file</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># we can create a string and add it as a new file</span>
 <span class="n">new_zip</span><span class="o">.</span><span class="n">write_string</span><span class="p">(</span><span class="n">data_string</span><span class="o">=</span><span class="s2">&quot;A new fake file&quot;</span><span class="p">,</span><span class="n">archive_file_name</span><span class="o">=</span><span class="s2">&quot;string.txt&quot;</span><span class="p">)</span>
 </pre></div>
 
@@ -12037,7 +12038,7 @@ It took 10.123 s to import all of the active modules
 <div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># lets save the archive</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># lets save the archive</span>
 <span class="n">new_zip</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span><span class="s2">r&quot;Zip_Example_Files\ZipArchive_Test_01.zip&quot;</span><span class="p">))</span>
 </pre></div>
 
@@ -12051,7 +12052,7 @@ It took 10.123 s to import all of the active modules
 <div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="n">new_zip</span><span class="o">.</span><span class="n">files</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">new_zip</span><span class="o">.</span><span class="n">files</span>
 </pre></div>
 
 </div>
@@ -12086,7 +12087,7 @@ It took 10.123 s to import all of the active modules
 <div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># now we can extract all of the files to a directory</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># now we can extract all of the files to a directory</span>
 <span class="n">new_zip</span><span class="o">.</span><span class="n">extract_all</span><span class="p">(</span><span class="n">destination_directory</span><span class="o">=</span><span class="s2">r&quot;Zip_Example_Files\Extracted_Files&quot;</span><span class="p">)</span>
 </pre></div>
 
@@ -12097,10 +12098,10 @@ It took 10.123 s to import all of the active modules
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython2"><pre><span></span><span class="c1"># now we close it and it goes away. Note, because of the way zip files work a copy will be saved under the default name.</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># now we close it and it goes away. Note, because of the way zip files work a copy will be saved under the default name.</span>
 <span class="c1"># To change the default name set the options directory, specfic_descriptor, general_descriptor</span>
 </pre></div>
 

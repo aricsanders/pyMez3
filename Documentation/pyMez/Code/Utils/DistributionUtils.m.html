@@ -1132,7 +1132,21 @@ table {
   <header id="section-intro">
   <h1 class="title"><span class="name">pyMez.Code.Utils.DistributionUtils</span> module</h1>
   <p>Tools to help distribution. This began by renaming all instances of pyMeasure to
- pyMez to avoid PYPI conflicts with another package.</p>
+ pyMez to avoid PYPI conflicts with another package.
+ Procedure:
+ + update the src folder
+ + update the setup.py file to contain at least a higher number of version
+ + run this module to add init to all of the directories
+ + from the command line in the directory with setup.py run</p>
+<blockquote>
+<blockquote>
+<p>python setup.py sdist
+python setup.py sdist upload</p>
+</blockquote>
+</blockquote>
+<p>If this fails to upload, check that the $HOME directory is properly defined and that the
+ user name and password is right in .pypirc file
+ After this module is ran (update the src folder</p>
 <h2>Help</h2>
 <p><a href="./index.html"><code>pyMez.Code.Utils</code></a>
 <div>
@@ -1153,6 +1167,17 @@ table {
 <span class="c1">#-----------------------------------------------------------------------------</span>
 <span class="sd">&quot;&quot;&quot; Tools to help distribution. This began by renaming all instances of pyMeasure to</span>
 <span class="sd"> pyMez to avoid PYPI conflicts with another package.</span>
+<span class="sd"> Procedure:</span>
+<span class="sd"> + update the src folder</span>
+<span class="sd"> + update the setup.py file to contain at least a higher number of version</span>
+<span class="sd"> + run this module to add init to all of the directories</span>
+<span class="sd"> + from the command line in the directory with setup.py run</span>
+<span class="sd"> &gt;&gt;python setup.py sdist</span>
+<span class="sd"> &gt;&gt;python setup.py sdist upload</span>
+
+<span class="sd"> If this fails to upload, check that the $HOME directory is properly defined and that the</span>
+<span class="sd"> user name and password is right in .pypirc file</span>
+<span class="sd"> After this module is ran (update the src folder</span>
 
 <span class="sd"> Help</span>
 <span class="sd">---------------</span>

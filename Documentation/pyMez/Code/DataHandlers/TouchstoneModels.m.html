@@ -1223,6 +1223,7 @@ table {
     <li class="mono"><a href="#pyMez.Code.DataHandlers.TouchstoneModels.EXTENSION_PATTERN">EXTENSION_PATTERN</a></li>
     <li class="mono"><a href="#pyMez.Code.DataHandlers.TouchstoneModels.FORMATS">FORMATS</a></li>
     <li class="mono"><a href="#pyMez.Code.DataHandlers.TouchstoneModels.FREQUENCY_UNITS">FREQUENCY_UNITS</a></li>
+    <li class="mono"><a href="#pyMez.Code.DataHandlers.TouchstoneModels.GENERAL_DESCRIPTORS">GENERAL_DESCRIPTORS</a></li>
     <li class="mono"><a href="#pyMez.Code.DataHandlers.TouchstoneModels.METHOD_ALIASES">METHOD_ALIASES</a></li>
     <li class="mono"><a href="#pyMez.Code.DataHandlers.TouchstoneModels.MINIMUM_DB_ARG_VALUE">MINIMUM_DB_ARG_VALUE</a></li>
     <li class="mono"><a href="#pyMez.Code.DataHandlers.TouchstoneModels.MINIMUM_DB_VALUE">MINIMUM_DB_VALUE</a></li>
@@ -1244,6 +1245,7 @@ table {
     <li class="mono"><a href="#pyMez.Code.DataHandlers.TouchstoneModels.StringTypes">StringTypes</a></li>
     <li class="mono"><a href="#pyMez.Code.DataHandlers.TouchstoneModels.TESTS_DIRECTORY">TESTS_DIRECTORY</a></li>
     <li class="mono"><a href="#pyMez.Code.DataHandlers.TouchstoneModels.TOUCHSTONE_KEYWORDS">TOUCHSTONE_KEYWORDS</a></li>
+    <li class="mono"><a href="#pyMez.Code.DataHandlers.TouchstoneModels.type_names">type_names</a></li>
   </ul>
 
 	  </div>
@@ -1472,7 +1474,7 @@ table {
     <span class="n">number_rows_per_frequency</span><span class="o">=</span><span class="n">number_ports</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">4</span>
     <span class="n">row_formatter</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
     <span class="k">if</span> <span class="n">precision</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">precision</span><span class="o">=</span><span class="mi">4</span>
+        <span class="n">precision</span><span class="o">=</span><span class="mi">10</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_columns</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="n">number_columns</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
             <span class="n">row_formatter</span><span class="o">=</span><span class="n">row_formatter</span><span class="o">+</span><span class="s2">&quot;{&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;:.</span><span class="si">%s</span><span class="s2">g}&quot;</span><span class="o">%</span><span class="n">precision</span>
@@ -1891,7 +1893,7 @@ table {
                   <span class="s2">&quot;extension&quot;</span><span class="p">:</span><span class="s1">&#39;s1p&#39;</span><span class="p">,</span>
                   <span class="s2">&quot;metadata&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
                   <span class="s2">&quot;column_descriptions&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
-                  <span class="s2">&quot;sparameter_row_formatter_string&quot;</span><span class="p">:</span><span class="n">build_row_formatter</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span>
+                  <span class="s2">&quot;sparameter_row_formatter_string&quot;</span><span class="p">:</span><span class="n">build_row_formatter</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span>
                   <span class="s2">&quot;data&quot;</span><span class="p">:[],</span>
                   <span class="s2">&quot;sparameter_complex&quot;</span><span class="p">:[],</span>
                   <span class="s2">&quot;noiseparameter_data&quot;</span><span class="p">:[],</span>
@@ -3239,28 +3241,28 @@ table {
 <span class="c1">#-----------------------------------------------------------------------------</span>
 <span class="c1"># Module Runner</span>
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="c1">#test_S1PV1()</span>
-    <span class="c1">#test_option_string()</span>
-    <span class="c1">#test_s2pv1()</span>
-    <span class="c1">#test_s2pv1(&#39;TwoPortTouchstoneTestFile.s2p&#39;)</span>
-    <span class="c1">#test_change_format()</span>
-    <span class="c1">#test_change_format(&#39;TwoPortTouchstoneTestFile.s2p&#39;)</span>
-    <span class="c1">#test_change_format(&#39;20160301_30ft_cable_0.s2p&#39;)</span>
-    <span class="c1">#test_change_format_SNP(&#39;setup20101028.s4p&#39;)</span>
-    <span class="c1">#test_change_frequency_units(&#39;setup20101028.s4p&#39;)</span>
+    <span class="n">test_S1PV1</span><span class="p">()</span>
+    <span class="n">test_option_string</span><span class="p">()</span>
+    <span class="n">test_s2pv1</span><span class="p">()</span>
+    <span class="n">test_s2pv1</span><span class="p">(</span><span class="s1">&#39;TwoPortTouchstoneTestFile.s2p&#39;</span><span class="p">)</span>
+    <span class="n">test_change_format</span><span class="p">()</span>
+    <span class="n">test_change_format</span><span class="p">(</span><span class="s1">&#39;TwoPortTouchstoneTestFile.s2p&#39;</span><span class="p">)</span>
+    <span class="n">test_change_format</span><span class="p">(</span><span class="s1">&#39;20160301_30ft_cable_0.s2p&#39;</span><span class="p">)</span>
+    <span class="n">test_change_format_SNP</span><span class="p">(</span><span class="s1">&#39;setup20101028.s4p&#39;</span><span class="p">)</span>
+    <span class="n">test_change_frequency_units</span><span class="p">(</span><span class="s1">&#39;setup20101028.s4p&#39;</span><span class="p">)</span>
     <span class="n">test_change_frequency_units</span><span class="p">(</span><span class="s2">&quot;B7_baseline_50ohm_OR2_10n0_4p0_REV2_EVB1_01new.s3p&quot;</span><span class="p">)</span>
-    <span class="c1">#test_s2pv1(&#39;704b.S2P&#39;)</span>
-    <span class="c1">#test_change_format(&#39;704b.S2P&#39;)</span>
-    <span class="c1">#test_build_snp_column_names()</span>
-    <span class="c1">#test_SNP()</span>
-    <span class="c1">#test_SNP(&quot;B7_baseline_50ohm_OR2_10n0_4p0_REV2_EVB1_01new.s3p&quot;)</span>
-    <span class="c1">#test_SNP(&#39;setup20101028.s4p&#39;)</span>
-    <span class="c1"># test_s2p_mean()</span>
-    <span class="c1"># test_s2p_difference()</span>
-    <span class="c1"># test_s2p_mean([&quot;thru.s2p&quot;,&quot;thru.s2p&quot;,&quot;thru.s2p&quot;])</span>
-    <span class="c1">#test_s2p_mean_and_difference()</span>
-    <span class="c1">#test_SNP(&#39;Solution_0.s4p&#39;)</span>
-    <span class="c1">#test_change_format_SNP(&#39;Solution_0.s4p&#39;)</span>
+    <span class="n">test_s2pv1</span><span class="p">(</span><span class="s1">&#39;704b.S2P&#39;</span><span class="p">)</span>
+    <span class="n">test_change_format</span><span class="p">(</span><span class="s1">&#39;704b.S2P&#39;</span><span class="p">)</span>
+    <span class="n">test_build_snp_column_names</span><span class="p">()</span>
+    <span class="n">test_SNP</span><span class="p">()</span>
+    <span class="n">test_SNP</span><span class="p">(</span><span class="s2">&quot;B7_baseline_50ohm_OR2_10n0_4p0_REV2_EVB1_01new.s3p&quot;</span><span class="p">)</span>
+    <span class="n">test_SNP</span><span class="p">(</span><span class="s1">&#39;setup20101028.s4p&#39;</span><span class="p">)</span>
+    <span class="n">test_s2p_mean</span><span class="p">()</span>
+    <span class="n">test_s2p_difference</span><span class="p">()</span>
+    <span class="n">test_s2p_mean</span><span class="p">([</span><span class="s2">&quot;thru.s2p&quot;</span><span class="p">,</span><span class="s2">&quot;thru.s2p&quot;</span><span class="p">,</span><span class="s2">&quot;thru.s2p&quot;</span><span class="p">])</span>
+    <span class="n">test_s2p_mean_and_difference</span><span class="p">()</span>
+    <span class="n">test_SNP</span><span class="p">(</span><span class="s1">&#39;Solution_0.s4p&#39;</span><span class="p">)</span>
+    <span class="n">test_change_format_SNP</span><span class="p">(</span><span class="s1">&#39;Solution_0.s4p&#39;</span><span class="p">)</span>
     <span class="n">test_add_comment</span><span class="p">()</span>
 </pre></div>
 
@@ -3420,7 +3422,7 @@ for a snp file. If number_ports is 1,2 all sparameters are assumed to be on a si
     <span class="n">number_rows_per_frequency</span><span class="o">=</span><span class="n">number_ports</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">4</span>
     <span class="n">row_formatter</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
     <span class="k">if</span> <span class="n">precision</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">precision</span><span class="o">=</span><span class="mi">4</span>
+        <span class="n">precision</span><span class="o">=</span><span class="mi">10</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_columns</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="n">number_columns</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
             <span class="n">row_formatter</span><span class="o">=</span><span class="n">row_formatter</span><span class="o">+</span><span class="s2">&quot;{&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;:.</span><span class="si">%s</span><span class="s2">g}&quot;</span><span class="o">%</span><span class="n">precision</span>
@@ -4216,7 +4218,7 @@ stored parameter (default is S), data format (RI,MA or DB) and reference resista
                   <span class="s2">&quot;extension&quot;</span><span class="p">:</span><span class="s1">&#39;s1p&#39;</span><span class="p">,</span>
                   <span class="s2">&quot;metadata&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
                   <span class="s2">&quot;column_descriptions&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
-                  <span class="s2">&quot;sparameter_row_formatter_string&quot;</span><span class="p">:</span><span class="n">build_row_formatter</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span>
+                  <span class="s2">&quot;sparameter_row_formatter_string&quot;</span><span class="p">:</span><span class="n">build_row_formatter</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span>
                   <span class="s2">&quot;data&quot;</span><span class="p">:[],</span>
                   <span class="s2">&quot;sparameter_complex&quot;</span><span class="p">:[],</span>
                   <span class="s2">&quot;noiseparameter_data&quot;</span><span class="p">:[],</span>
@@ -4592,7 +4594,7 @@ http://cp.literature.agilent.com/litweb/pdf/genesys200801/sim/linear_sim/sparams
               <span class="s2">&quot;extension&quot;</span><span class="p">:</span><span class="s1">&#39;s1p&#39;</span><span class="p">,</span>
               <span class="s2">&quot;metadata&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
               <span class="s2">&quot;column_descriptions&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
-              <span class="s2">&quot;sparameter_row_formatter_string&quot;</span><span class="p">:</span><span class="n">build_row_formatter</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span>
+              <span class="s2">&quot;sparameter_row_formatter_string&quot;</span><span class="p">:</span><span class="n">build_row_formatter</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span>
               <span class="s2">&quot;data&quot;</span><span class="p">:[],</span>
               <span class="s2">&quot;sparameter_complex&quot;</span><span class="p">:[],</span>
               <span class="s2">&quot;noiseparameter_data&quot;</span><span class="p">:[],</span>
@@ -8558,6 +8560,14 @@ series of subplots</p></div>
 
       </div>
       <div class="item">
+      <p id="pyMez.Code.DataHandlers.TouchstoneModels.GENERAL_DESCRIPTORS" class="name">var <span class="ident">GENERAL_DESCRIPTORS</span></p>
+      
+  
+  <div class="source_cont">
+</div>
+
+      </div>
+      <div class="item">
       <p id="pyMez.Code.DataHandlers.TouchstoneModels.METHOD_ALIASES" class="name">var <span class="ident">METHOD_ALIASES</span></p>
       
   
@@ -8726,6 +8736,14 @@ series of subplots</p></div>
       
   
     <div class="desc"><p>Keywords for version 2 touchstone files, not currently implemented</p></div>
+  <div class="source_cont">
+</div>
+
+      </div>
+      <div class="item">
+      <p id="pyMez.Code.DataHandlers.TouchstoneModels.type_names" class="name">var <span class="ident">type_names</span></p>
+      
+  
   <div class="source_cont">
 </div>
 

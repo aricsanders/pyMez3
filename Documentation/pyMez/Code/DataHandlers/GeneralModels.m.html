@@ -1266,6 +1266,7 @@ table {
       
   <ul>
     <li class="mono"><a href="#pyMez.Code.DataHandlers.GeneralModels.DEFAULT_FILE_NAME">DEFAULT_FILE_NAME</a></li>
+    <li class="mono"><a href="#pyMez.Code.DataHandlers.GeneralModels.GENERAL_DESCRIPTORS">GENERAL_DESCRIPTORS</a></li>
     <li class="mono"><a href="#pyMez.Code.DataHandlers.GeneralModels.METHOD_ALIASES">METHOD_ALIASES</a></li>
     <li class="mono"><a href="#pyMez.Code.DataHandlers.GeneralModels.NUMBER_MATCH_STRING">NUMBER_MATCH_STRING</a></li>
     <li class="mono"><a href="#pyMez.Code.DataHandlers.GeneralModels.StringTypes">StringTypes</a></li>
@@ -1288,7 +1289,9 @@ table {
   <h1 class="title"><span class="name">pyMez.Code.DataHandlers.GeneralModels</span> module</h1>
   <p>GeneralModels is a module that contains general data models and functions for handling them. Its key
  class is AsciiDataTable that is an abstracted model of a data table with a header full of metadata, a
- column modeled table (like excel or a csv table) and a footer. The</p>
+ column modeled table (like excel or a csv table) and a footer. Made a change 10/19/2018 to AsciiDataTable
+ that now by default saves a .schema file and looks for one to open the table (save_schema=True,
+ open_with_schema =True )</p>
 <h2>Examples</h2>
 <div class="codehilite"><pre><span></span><span class="o">&gt;&gt;</span><span class="kn">from</span> <span class="nn">pyMez</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="o">&gt;&gt;</span><span class="n">table</span><span class="o">=</span><span class="n">AsciiDataTable</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]],</span><span class="n">column_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span><span class="s2">&quot;b])</span>
@@ -1327,7 +1330,9 @@ table {
 <span class="c1">#-----------------------------------------------------------------------------</span>
 <span class="sd">&quot;&quot;&quot; GeneralModels is a module that contains general data models and functions for handling them. Its key</span>
 <span class="sd"> class is AsciiDataTable that is an abstracted model of a data table with a header full of metadata, a</span>
-<span class="sd"> column modeled table (like excel or a csv table) and a footer. The</span>
+<span class="sd"> column modeled table (like excel or a csv table) and a footer. Made a change 10/19/2018 to AsciiDataTable</span>
+<span class="sd"> that now by default saves a .schema file and looks for one to open the table (save_schema=True,</span>
+<span class="sd"> open_with_schema =True )</span>
 
 
 <span class="sd">Examples</span>
@@ -1376,7 +1381,7 @@ table {
     <span class="n">METHOD_ALIASES</span><span class="o">=</span><span class="mi">0</span>
     <span class="k">pass</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">Code.Utils.Names</span> <span class="kn">import</span> <span class="n">auto_name</span>
+    <span class="kn">from</span> <span class="nn">Code.Utils.Names</span> <span class="kn">import</span> <span class="o">*</span>
     <span class="n">DEFAULT_FILE_NAME</span><span class="o">=</span><span class="bp">None</span>
 <span class="k">except</span><span class="p">:</span>
     <span class="k">print</span><span class="p">(</span><span class="s2">&quot;The function auto_name in pyMez.Code.Utils.Names was not found&quot;</span><span class="p">)</span>
@@ -1953,7 +1958,10 @@ table {
                   <span class="s2">&quot;treat_header_as_comment&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
                   <span class="s2">&quot;treat_footer_as_comment&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
                   <span class="s2">&quot;metadata&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
-                  <span class="s2">&quot;data_list_dictionary&quot;</span><span class="p">:</span><span class="bp">None</span>
+                  <span class="s2">&quot;data_list_dictionary&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="s2">&quot;save_schema&quot;</span><span class="p">:</span><span class="bp">True</span><span class="p">,</span>
+                  <span class="s2">&quot;open_with_schema&quot;</span><span class="p">:</span><span class="bp">True</span><span class="p">,</span>
+                  <span class="s2">&quot;use_alternative_parser&quot;</span><span class="p">:</span><span class="bp">True</span><span class="p">,</span>
                   <span class="p">}</span>
         <span class="c1">#some of the options have the abiltiy to confilct with each other, so there has to be a</span>
         <span class="c1">#built-in way to determine the precedence of each option, for import lines first, then begin and then end</span>
@@ -2016,6 +2024,16 @@ table {
             <span class="c1"># we can just return an error right now and then have an __autoload__ method</span>
             <span class="c1"># we can assume it is in ascii or utf-8</span>
             <span class="c1"># set any attribute that has no options to None</span>
+
+            <span class="c1"># try to parse schema</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;open_with_schema&quot;</span><span class="p">]:</span>
+                    <span class="n">new_options</span><span class="o">=</span><span class="n">read_schema</span><span class="p">(</span><span class="n">change_extension</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span><span class="n">new_extension</span><span class="o">=</span><span class="s2">&quot;schema&quot;</span><span class="p">))</span>
+                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">new_options</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+
             <span class="bp">self</span><span class="o">.</span><span class="n">structure_metadata</span><span class="p">()</span>
             <span class="n">import_table</span><span class="o">=</span><span class="p">[]</span>
             <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span>
@@ -2105,8 +2123,19 @@ table {
                             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lines_defined</span><span class="p">():</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">__parse__</span><span class="p">()</span>
                             <span class="k">else</span><span class="p">:</span>
-                                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;FAILED to import file!&quot;</span><span class="p">)</span>
-                                <span class="k">raise</span>
+                                <span class="k">try</span><span class="p">:</span>
+                                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;use_alternative_parser&quot;</span><span class="p">]:</span><span class="k">raise</span>
+                                    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;No schema was found, trying pandas parser, this may take a little while..&quot;</span><span class="p">)</span>
+                                    <span class="kn">import</span> <span class="nn">pandas</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">pandas_data_frame</span><span class="o">=</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span>
+                                                                           <span class="n">sep</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;data_delimiter&quot;</span><span class="p">])</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">column_names</span> <span class="o">=</span><span class="bp">self</span><span class="o">.</span> <span class="n">pandas_data_frame</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:]</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pandas_data_frame</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:]</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;column_types&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+                                                                             <span class="bp">self</span><span class="o">.</span><span class="n">pandas_data_frame</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:])</span>
+                                <span class="k">except</span><span class="p">:</span>
+                                    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;FAILED to import file!&quot;</span><span class="p">)</span>
+                                    <span class="k">raise</span>
     <span class="k">def</span> <span class="nf">structure_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Function that should be overridden by whatever model the datatable has, it only responds with a self.metadata</span>
 <span class="sd">        attribute in its base state derived from self.options[&quot;metadata]&quot;&quot;&quot;</span>
@@ -2346,6 +2375,8 @@ table {
         <span class="n">file_out</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
         <span class="n">file_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out_string</span><span class="p">)</span>
         <span class="n">file_out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;save_schema&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save_schema</span><span class="p">(</span><span class="n">change_extension</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">new_extension</span><span class="o">=</span><span class="s2">&quot;schema&quot;</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">=</span><span class="n">original_options</span>
 
     <span class="k">def</span> <span class="nf">build_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">temp_options</span><span class="p">):</span>
@@ -3680,7 +3711,7 @@ table {
                   <span class="p">}</span>
     <span class="n">new_table</span><span class="o">=</span><span class="n">AsciiDataTable</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
     <span class="k">print</span><span class="p">(</span><span class="s2">&quot; New Table is:&quot;</span><span class="p">)</span>
-    <span class="n">new_table</span><span class="o">.</span><span class="n">__parse__</span><span class="p">()</span>
+    <span class="c1">#new_table.__parse__()</span>
     <span class="k">print</span> <span class="n">new_table</span>
     <span class="k">print</span> <span class="nb">type</span><span class="p">(</span><span class="n">new_table</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
     <span class="k">print</span> <span class="n">new_table</span><span class="o">.</span><span class="n">get_data_dictionary_list</span><span class="p">()</span>
@@ -3689,7 +3720,7 @@ table {
     <span class="c1">#print(&quot;-&quot;*80)</span>
     <span class="c1">#new_table.save()</span>
     <span class="c1">#new_table.save_schema()</span>
-    <span class="n">options_2</span><span class="o">=</span><span class="n">new_table</span><span class="o">.</span><span class="n">options</span>
+    <span class="c1">#options_2=new_table.options</span>
     <span class="c1">#new_table_2=AsciiDataTable(new_table.path,**options_2)</span>
     <span class="c1">#print_comparison(new_table.header,new_table_2.header)</span>
 
@@ -3697,7 +3728,7 @@ table {
     <span class="sd">&quot;&quot;&quot; Tests the read_schema function</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">TESTS_DIRECTORY</span><span class="p">)</span>
-    <span class="n">file_path</span><span class="o">=</span><span class="s2">&quot;Data_Table_20160301_031_Schema_20160301_001.txt&quot;</span>
+    <span class="n">file_path</span><span class="o">=</span><span class="s2">&quot;Data_Table_20181026_001.schema&quot;</span>
     <span class="n">schema</span><span class="o">=</span><span class="n">read_schema</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">schema</span>
 
@@ -3826,20 +3857,20 @@ table {
 <span class="c1">#-----------------------------------------------------------------------------</span>
 <span class="c1"># Module Runner</span>
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="c1"># test_AsciiDataTable()</span>
+    <span class="n">test_AsciiDataTable</span><span class="p">()</span>
     <span class="n">test_open_existing_AsciiDataTable</span><span class="p">()</span>
-    <span class="c1">#test_AsciiDataTable_equality()</span>
+    <span class="n">test_AsciiDataTable_equality</span><span class="p">()</span>
     <span class="n">test_inline_comments</span><span class="p">()</span>
     <span class="n">test_add_row</span><span class="p">()</span>
     <span class="n">test_add_index</span><span class="p">()</span>
-    <span class="c1">#show_structure_script()</span>
-    <span class="c1">#test_save_schema()</span>
-    <span class="c1">#test_read_schema()</span>
+    <span class="n">show_structure_script</span><span class="p">()</span>
+    <span class="n">test_save_schema</span><span class="p">()</span>
+    <span class="n">test_read_schema</span><span class="p">()</span>
     <span class="n">test_change_unit_prefix</span><span class="p">()</span>
     <span class="n">test_add_column</span><span class="p">()</span>
-    <span class="c1"># test_AsciiDataTable_get_column_and_getitem()</span>
-    <span class="c1"># test_copy_method()</span>
-    <span class="c1"># test_add_method()</span>
+    <span class="n">test_AsciiDataTable_get_column_and_getitem</span><span class="p">()</span>
+    <span class="n">test_copy_method</span><span class="p">()</span>
+    <span class="n">test_add_method</span><span class="p">()</span>
     <span class="n">test_get_item</span><span class="p">()</span>
 </pre></div>
 
@@ -5412,7 +5443,7 @@ is.</p></div>
     <span class="sd">&quot;&quot;&quot; Tests the read_schema function</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">TESTS_DIRECTORY</span><span class="p">)</span>
-    <span class="n">file_path</span><span class="o">=</span><span class="s2">&quot;Data_Table_20160301_031_Schema_20160301_001.txt&quot;</span>
+    <span class="n">file_path</span><span class="o">=</span><span class="s2">&quot;Data_Table_20181026_001.schema&quot;</span>
     <span class="n">schema</span><span class="o">=</span><span class="n">read_schema</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
     <span class="k">print</span> <span class="n">schema</span>
 </pre></div>
@@ -5475,16 +5506,12 @@ is.</p></div>
                   <span class="p">}</span>
     <span class="n">new_table</span><span class="o">=</span><span class="n">AsciiDataTable</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span><span class="o">**</span><span class="n">options</span><span class="p">)</span>
     <span class="k">print</span><span class="p">(</span><span class="s2">&quot; New Table is:&quot;</span><span class="p">)</span>
-    <span class="n">new_table</span><span class="o">.</span><span class="n">__parse__</span><span class="p">()</span>
+    <span class="c1">#new_table.__parse__()</span>
     <span class="k">print</span> <span class="n">new_table</span>
     <span class="k">print</span> <span class="nb">type</span><span class="p">(</span><span class="n">new_table</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
     <span class="k">print</span> <span class="n">new_table</span><span class="o">.</span><span class="n">get_data_dictionary_list</span><span class="p">()</span>
     <span class="n">new_table</span><span class="o">.</span><span class="n">add_index</span><span class="p">()</span>
     <span class="k">print</span> <span class="n">new_table</span><span class="o">.</span><span class="n">get_data_dictionary_list</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
-    <span class="c1">#print(&quot;-&quot;*80)</span>
-    <span class="c1">#new_table.save()</span>
-    <span class="c1">#new_table.save_schema()</span>
-    <span class="n">options_2</span><span class="o">=</span><span class="n">new_table</span><span class="o">.</span><span class="n">options</span>
 </pre></div>
 
   </div>
@@ -5559,7 +5586,10 @@ column names,rectangular array of data, and footer</p></div>
                   <span class="s2">&quot;treat_header_as_comment&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
                   <span class="s2">&quot;treat_footer_as_comment&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
                   <span class="s2">&quot;metadata&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
-                  <span class="s2">&quot;data_list_dictionary&quot;</span><span class="p">:</span><span class="bp">None</span>
+                  <span class="s2">&quot;data_list_dictionary&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
+                  <span class="s2">&quot;save_schema&quot;</span><span class="p">:</span><span class="bp">True</span><span class="p">,</span>
+                  <span class="s2">&quot;open_with_schema&quot;</span><span class="p">:</span><span class="bp">True</span><span class="p">,</span>
+                  <span class="s2">&quot;use_alternative_parser&quot;</span><span class="p">:</span><span class="bp">True</span><span class="p">,</span>
                   <span class="p">}</span>
         <span class="c1">#some of the options have the abiltiy to confilct with each other, so there has to be a</span>
         <span class="c1">#built-in way to determine the precedence of each option, for import lines first, then begin and then end</span>
@@ -5622,6 +5652,16 @@ column names,rectangular array of data, and footer</p></div>
             <span class="c1"># we can just return an error right now and then have an __autoload__ method</span>
             <span class="c1"># we can assume it is in ascii or utf-8</span>
             <span class="c1"># set any attribute that has no options to None</span>
+
+            <span class="c1"># try to parse schema</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;open_with_schema&quot;</span><span class="p">]:</span>
+                    <span class="n">new_options</span><span class="o">=</span><span class="n">read_schema</span><span class="p">(</span><span class="n">change_extension</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span><span class="n">new_extension</span><span class="o">=</span><span class="s2">&quot;schema&quot;</span><span class="p">))</span>
+                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">new_options</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+
             <span class="bp">self</span><span class="o">.</span><span class="n">structure_metadata</span><span class="p">()</span>
             <span class="n">import_table</span><span class="o">=</span><span class="p">[]</span>
             <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span>
@@ -5711,8 +5751,19 @@ column names,rectangular array of data, and footer</p></div>
                             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lines_defined</span><span class="p">():</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">__parse__</span><span class="p">()</span>
                             <span class="k">else</span><span class="p">:</span>
-                                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;FAILED to import file!&quot;</span><span class="p">)</span>
-                                <span class="k">raise</span>
+                                <span class="k">try</span><span class="p">:</span>
+                                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;use_alternative_parser&quot;</span><span class="p">]:</span><span class="k">raise</span>
+                                    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;No schema was found, trying pandas parser, this may take a little while..&quot;</span><span class="p">)</span>
+                                    <span class="kn">import</span> <span class="nn">pandas</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">pandas_data_frame</span><span class="o">=</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span>
+                                                                           <span class="n">sep</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;data_delimiter&quot;</span><span class="p">])</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">column_names</span> <span class="o">=</span><span class="bp">self</span><span class="o">.</span> <span class="n">pandas_data_frame</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:]</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pandas_data_frame</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:]</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;column_types&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+                                                                             <span class="bp">self</span><span class="o">.</span><span class="n">pandas_data_frame</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:])</span>
+                                <span class="k">except</span><span class="p">:</span>
+                                    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;FAILED to import file!&quot;</span><span class="p">)</span>
+                                    <span class="k">raise</span>
     <span class="k">def</span> <span class="nf">structure_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Function that should be overridden by whatever model the datatable has, it only responds with a self.metadata</span>
 <span class="sd">        attribute in its base state derived from self.options[&quot;metadata]&quot;&quot;&quot;</span>
@@ -5952,6 +6003,8 @@ column names,rectangular array of data, and footer</p></div>
         <span class="n">file_out</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
         <span class="n">file_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out_string</span><span class="p">)</span>
         <span class="n">file_out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;save_schema&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save_schema</span><span class="p">(</span><span class="n">change_extension</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">new_extension</span><span class="o">=</span><span class="s2">&quot;schema&quot;</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">=</span><span class="n">original_options</span>
 
     <span class="k">def</span> <span class="nf">build_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">temp_options</span><span class="p">):</span>
@@ -6861,7 +6914,10 @@ column names,rectangular array of data, and footer</p></div>
               <span class="s2">&quot;treat_header_as_comment&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
               <span class="s2">&quot;treat_footer_as_comment&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
               <span class="s2">&quot;metadata&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
-              <span class="s2">&quot;data_list_dictionary&quot;</span><span class="p">:</span><span class="bp">None</span>
+              <span class="s2">&quot;data_list_dictionary&quot;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span>
+              <span class="s2">&quot;save_schema&quot;</span><span class="p">:</span><span class="bp">True</span><span class="p">,</span>
+              <span class="s2">&quot;open_with_schema&quot;</span><span class="p">:</span><span class="bp">True</span><span class="p">,</span>
+              <span class="s2">&quot;use_alternative_parser&quot;</span><span class="p">:</span><span class="bp">True</span><span class="p">,</span>
               <span class="p">}</span>
     <span class="c1">#some of the options have the abiltiy to confilct with each other, so there has to be a</span>
     <span class="c1">#built-in way to determine the precedence of each option, for import lines first, then begin and then end</span>
@@ -6920,6 +6976,14 @@ column names,rectangular array of data, and footer</p></div>
         <span class="c1"># we can just return an error right now and then have an __autoload__ method</span>
         <span class="c1"># we can assume it is in ascii or utf-8</span>
         <span class="c1"># set any attribute that has no options to None</span>
+        <span class="c1"># try to parse schema</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;open_with_schema&quot;</span><span class="p">]:</span>
+                <span class="n">new_options</span><span class="o">=</span><span class="n">read_schema</span><span class="p">(</span><span class="n">change_extension</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span><span class="n">new_extension</span><span class="o">=</span><span class="s2">&quot;schema&quot;</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">new_options</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">structure_metadata</span><span class="p">()</span>
         <span class="n">import_table</span><span class="o">=</span><span class="p">[]</span>
         <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span>
@@ -7009,8 +7073,19 @@ column names,rectangular array of data, and footer</p></div>
                         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lines_defined</span><span class="p">():</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">__parse__</span><span class="p">()</span>
                         <span class="k">else</span><span class="p">:</span>
-                            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;FAILED to import file!&quot;</span><span class="p">)</span>
-                            <span class="k">raise</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;use_alternative_parser&quot;</span><span class="p">]:</span><span class="k">raise</span>
+                                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;No schema was found, trying pandas parser, this may take a little while..&quot;</span><span class="p">)</span>
+                                <span class="kn">import</span> <span class="nn">pandas</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">pandas_data_frame</span><span class="o">=</span><span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span>
+                                                                       <span class="n">sep</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;data_delimiter&quot;</span><span class="p">])</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">column_names</span> <span class="o">=</span><span class="bp">self</span><span class="o">.</span> <span class="n">pandas_data_frame</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:]</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pandas_data_frame</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:]</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;column_types&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+                                                                         <span class="bp">self</span><span class="o">.</span><span class="n">pandas_data_frame</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[:])</span>
+                            <span class="k">except</span><span class="p">:</span>
+                                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;FAILED to import file!&quot;</span><span class="p">)</span>
+                                <span class="k">raise</span>
 </pre></div>
 
   </div>
@@ -8204,6 +8279,8 @@ otherwise uses the object's attribute path to define the saving location</p></di
     <span class="n">file_out</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
     <span class="n">file_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out_string</span><span class="p">)</span>
     <span class="n">file_out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;save_schema&quot;</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_schema</span><span class="p">(</span><span class="n">change_extension</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">new_extension</span><span class="o">=</span><span class="s2">&quot;schema&quot;</span><span class="p">))</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">=</span><span class="n">original_options</span>
 </pre></div>
 
@@ -10615,6 +10692,8 @@ otherwise uses the object's attribute path to define the saving location</p></di
     <span class="n">file_out</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
     <span class="n">file_out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out_string</span><span class="p">)</span>
     <span class="n">file_out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;save_schema&quot;</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_schema</span><span class="p">(</span><span class="n">change_extension</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="n">new_extension</span><span class="o">=</span><span class="s2">&quot;schema&quot;</span><span class="p">))</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">=</span><span class="n">original_options</span>
 </pre></div>
 
@@ -10946,6 +11025,14 @@ In addition, it will update the options dictionary to reflect added rows, change
     <h2 class="section-title" id="header-variables">Module variables</h2>
       <div class="item">
       <p id="pyMez.Code.DataHandlers.GeneralModels.DEFAULT_FILE_NAME" class="name">var <span class="ident">DEFAULT_FILE_NAME</span></p>
+      
+  
+  <div class="source_cont">
+</div>
+
+      </div>
+      <div class="item">
+      <p id="pyMez.Code.DataHandlers.GeneralModels.GENERAL_DESCRIPTORS" class="name">var <span class="ident">GENERAL_DESCRIPTORS</span></p>
       
   
   <div class="source_cont">

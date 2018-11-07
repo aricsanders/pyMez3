@@ -1415,6 +1415,7 @@ table {
     <li class="mono"><a href="#pyMez.Code.InstrumentControl.Instruments.TOUCHSTONE_KEYWORDS">TOUCHSTONE_KEYWORDS</a></li>
     <li class="mono"><a href="#pyMez.Code.InstrumentControl.Instruments.TWELVE_TERM_ERROR_COLUMN_NAMES">TWELVE_TERM_ERROR_COLUMN_NAMES</a></li>
     <li class="mono"><a href="#pyMez.Code.InstrumentControl.Instruments.VNA_FREQUENCY_UNIT_MULTIPLIERS">VNA_FREQUENCY_UNIT_MULTIPLIERS</a></li>
+    <li class="mono"><a href="#pyMez.Code.InstrumentControl.Instruments.type_names">type_names</a></li>
   </ul>
 
 	  </div>
@@ -1860,7 +1861,8 @@ wrappers around the pyvisa instrument class with static xml based metadata added
         
 <span class="k">class</span> <span class="nc">VisaInstrument</span><span class="p">(</span><span class="n">InstrumentSheet</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; General Class to communicate with COMM and GPIB instruments</span>
-<span class="sd">    This is a blend of the pyvisa resource and an xml description. &quot;&quot;&quot;</span>
+<span class="sd">    This is a blend of the pyvisa resource and an xml description. If there is no device connected</span>
+<span class="sd">     enters into a fake mode. Where all the commands are logged as .history and the attribute fake_mode=True&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">resource_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="o">**</span><span class="n">options</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Initializes the VisaInstrument Class&quot;&quot;&quot;</span>
         <span class="n">defaults</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;state_directory&quot;</span><span class="p">:</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span>
@@ -1898,25 +1900,35 @@ wrappers around the pyvisa instrument class with static xml based metadata added
         
         <span class="bp">self</span><span class="o">.</span><span class="n">state_buffer</span><span class="o">=</span><span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">STATE_BUFFER_MAX_LENGTH</span><span class="o">=</span><span class="mi">10</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">=</span><span class="n">visa</span><span class="o">.</span><span class="n">ResourceManager</span><span class="p">()</span>
-        <span class="c1"># Call the visa instrument class-- this gives ask,write,read</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">=</span><span class="n">visa</span><span class="o">.</span><span class="n">ResourceManager</span><span class="p">()</span>
+            <span class="c1"># Call the visa instrument class-- this gives ask,write,read</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fake_mode</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Unable to load resource entering fake mode ...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="n">FakeInstrument</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">history</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fake_mode</span><span class="o">=</span><span class="bp">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span>
         
 
     <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">command</span><span class="p">):</span>
         <span class="s2">&quot;Writes command to instrument&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;Reads from the instrument&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
     <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">command</span><span class="p">):</span>
         <span class="s2">&quot;Writes command and then reads a response&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">ask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">command</span><span class="p">):</span>
         <span class="s2">&quot;Writes command and then reads a response&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">set_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">state_dictionary</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">state_table</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Sets the instrument to the state specified by Command:Value pairs&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">state_dictionary</span><span class="p">:</span>
@@ -2031,42 +2043,50 @@ wrappers around the pyvisa instrument class with static xml based metadata added
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="n">VisaInstrument</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">power</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_power</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">IFBW</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_IFBW</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">frequency_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;frequency_units&quot;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="c1"># this should be if SENS:SWE:TYPE? is LIN or LOG</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sweep_type</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;LIN&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:START?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:STOP?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SWE:POIN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">number_points</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;LIN&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:START?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:STOP?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SWE:POIN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="n">logspace_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
-            <span class="n">logspace_stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ndigits</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">logspace_start</span><span class="p">,</span> <span class="n">logspace_stop</span><span class="p">,</span>
-                                                                                 <span class="n">num</span><span class="o">=</span><span class="n">number_points</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
-        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;SEG&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
-            <span class="n">number_segments</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM:COUN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_segments</span><span class="p">):</span>
-                <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:FREQ:START?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-                <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:FREQ:STOP?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-                <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:SWE:POIN?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-                <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">number_points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span> <span class="s2">&quot;stop&quot;</span><span class="p">:</span> <span class="n">stop</span><span class="p">,</span>
-                                             <span class="s2">&quot;number_points&quot;</span><span class="p">:</span> <span class="n">number_points</span><span class="p">,</span> <span class="s2">&quot;step&quot;</span><span class="p">:</span> <span class="n">step</span><span class="p">})</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span> <span class="o">=</span> <span class="n">fix_segment_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="p">)</span>
-                <span class="n">frequency_list</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="p">[:]:</span>
-                    <span class="n">new_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;stop&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;number_points&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-                    <span class="n">frequency_list</span> <span class="o">=</span> <span class="n">frequency_list</span> <span class="o">+</span> <span class="n">new_list</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="n">frequency_list</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fake_mode</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">power</span> <span class="o">=</span> <span class="o">-</span><span class="mi">20</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">IFBW</span> <span class="o">=</span> <span class="mi">10</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;frequency_units&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># this should be if SENS:SWE:TYPE? is LIN or LOG</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span> <span class="o">=</span><span class="s2">&quot;LIN&quot;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">power</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_power</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">IFBW</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_IFBW</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;frequency_units&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># this should be if SENS:SWE:TYPE? is LIN or LOG</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sweep_type</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;LIN&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:START?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:STOP?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SWE:POIN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">number_points</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;LIN&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:START?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:STOP?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SWE:POIN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="n">logspace_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+                <span class="n">logspace_stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ndigits</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">logspace_start</span><span class="p">,</span> <span class="n">logspace_stop</span><span class="p">,</span>
+                                                                                     <span class="n">num</span><span class="o">=</span><span class="n">number_points</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+            <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;SEG&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+                <span class="n">number_segments</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM:COUN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_segments</span><span class="p">):</span>
+                    <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:FREQ:START?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                    <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:FREQ:STOP?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                    <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:SWE:POIN?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                    <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">number_points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span> <span class="s2">&quot;stop&quot;</span><span class="p">:</span> <span class="n">stop</span><span class="p">,</span>
+                                                 <span class="s2">&quot;number_points&quot;</span><span class="p">:</span> <span class="n">number_points</span><span class="p">,</span> <span class="s2">&quot;step&quot;</span><span class="p">:</span> <span class="n">step</span><span class="p">})</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span> <span class="o">=</span> <span class="n">fix_segment_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="p">)</span>
+                    <span class="n">frequency_list</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="p">[:]:</span>
+                        <span class="n">new_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;stop&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;number_points&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                        <span class="n">frequency_list</span> <span class="o">=</span> <span class="n">frequency_list</span> <span class="o">+</span> <span class="n">new_list</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="n">frequency_list</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="nf">add_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">trace_name</span><span class="p">,</span><span class="n">trace_parameter</span><span class="p">,</span><span class="n">drive_port</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">display_trace</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Adds a single trace to the VNA. Trace parameters vary by instrument and can be ratios of</span>
@@ -2095,6 +2115,7 @@ wrappers around the pyvisa instrument class with static xml based metadata added
         <span class="n">im_list</span><span class="o">=</span><span class="n">out_string</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">out_list</span><span class="o">=</span><span class="p">[[</span><span class="nb">float</span><span class="p">(</span><span class="n">real_parameter</span><span class="p">),</span><span class="nb">float</span><span class="p">(</span><span class="n">im_list</span><span class="p">[</span><span class="n">index</span><span class="p">])]</span> <span class="k">for</span> <span class="n">index</span><span class="p">,</span><span class="n">real_parameter</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">re_list</span><span class="p">)]</span>
         <span class="k">return</span> <span class="n">out_list</span>
+
     <span class="k">def</span> <span class="nf">trigger_sweep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Triggers a single sweep of the VNA, note you need to wait for the sweep to finish before reading the</span>
 <span class="sd">        values. It takes ~ #ports sourced*#points/IFBW &quot;&quot;&quot;</span>
@@ -2415,11 +2436,11 @@ wrappers around the pyvisa instrument class with static xml based metadata added
             <span class="c1"># Set the Channel to have 2 Traces</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC1:PAR:COUN 2&quot;</span><span class="p">)</span>
             <span class="c1"># Trace 1 This is port 2 or Forward Switch Terms</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC1:PAR:DEF &#39;FWD&#39;,R2,1&quot;</span><span class="p">)</span>  <span class="c1"># note this command is different for vector star A2,B2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC1:PAR:DEF &#39;FWD&#39;,R2B,1&quot;</span><span class="p">)</span>  <span class="c1"># note this command is different for vector star A2,B2</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_switch_term_options</span><span class="p">[</span><span class="s2">&quot;view_trace&quot;</span><span class="p">]:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;DISPlay:WINDow1:TRACe5:FEED &#39;FWD&#39;&quot;</span><span class="p">)</span>
             <span class="c1"># Trace 2 This is port 1 or Reverse Switch Terms</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC1:PAR:DEF &#39;REV&#39;,R1,2&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC1:PAR:DEF &#39;REV&#39;,R1A,2&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_switch_term_options</span><span class="p">[</span><span class="s2">&quot;view_trace&quot;</span><span class="p">]:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;DISPlay:WINDow1:TRACe6:FEED &#39;REV&#39;&quot;</span><span class="p">)</span>
 
@@ -2434,11 +2455,11 @@ wrappers around the pyvisa instrument class with static xml based metadata added
         <span class="c1"># Set the read format</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;FORM:ASC,0&quot;</span><span class="p">)</span>
         <span class="c1"># Read in the data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC:PAR:SEL FWD;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC:PAR:SEL &#39;FWD&#39;;&quot;</span><span class="p">)</span>
         <span class="n">foward_switch_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;CALC:DATA? SDATA&quot;</span><span class="p">)</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_busy</span><span class="p">():</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="o">.</span><span class="mo">01</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC:PAR:SEL REV;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC:PAR:SEL &#39;REV&#39;;&quot;</span><span class="p">)</span>
         <span class="n">reverse_switch_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;CALC:DATA? SDATA&quot;</span><span class="p">)</span>
         <span class="c1"># Now parse the string</span>
         <span class="n">foward_switch_list</span> <span class="o">=</span> <span class="n">foward_switch_string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
@@ -3886,7 +3907,7 @@ This is a blend of the pyvisa resource and an xml description.</p></div>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">text_node</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="n">tag_name</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">text_node</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">attribute_dictionary</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">attribute_dictionary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">new_attribute</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">creatAttribute</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">setAttributeNode</span><span class="p">(</span><span class="n">new_attribute</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
@@ -4330,22 +4351,22 @@ window (using wx)</p></div>
         <span class="k">return</span> <span class="n">tagName</span>
     <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">,</span><span class="s1">&#39;txt&#39;</span><span class="p">,</span><span class="s1">&#39;cmd line&#39;</span><span class="p">,</span><span class="s1">&#39;cmd&#39;</span><span class="p">]:</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s1">&#39;Entry&#39;</span><span class="p">):</span>
-            <span class="k">print</span> <span class="s1">&#39;Entry Index: </span><span class="si">%s</span><span class="s1"> </span><span class="se">\t</span><span class="s1">Date: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Index&#39;</span><span class="p">),</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">))</span>
-            <span class="k">print</span> <span class="n">node</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">nodeValue</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Entry Index: </span><span class="si">%s</span><span class="s1"> </span><span class="se">\t</span><span class="s1">Date: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Index&#39;</span><span class="p">),</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">)))</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">nodeValue</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;xml&#39;</span><span class="p">,</span><span class="n">mode</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s1">&#39;Entry&#39;</span><span class="p">):</span>
-            <span class="k">print</span> <span class="n">node</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">()</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">())</span>
     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;Window|wx&#39;</span><span class="p">,</span><span class="n">mode</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">wx</span>
-            <span class="kn">import</span> <span class="nn">wx.html</span>
+            <span class="kn">import</span> <span class="nn">wx.html2</span>
         <span class="k">except</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s1">&#39;Cannot locate wx, please add to sys.path&#39;</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Cannot locate wx, please add to sys.path&#39;</span><span class="p">)</span>
         <span class="n">app</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">App</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
         <span class="n">frame</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
-        <span class="n">html_window</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">HtmlWindow</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
-        <span class="n">html_window</span><span class="o">.</span><span class="n">SetPage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_HTML</span><span class="p">()))</span>
+        <span class="n">html_window</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">html2</span><span class="o">.</span><span class="n">WebView</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+        <span class="n">html_window</span><span class="o">.</span><span class="n">SetPage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_HTML</span><span class="p">()),</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">frame</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
         <span class="n">app</span><span class="o">.</span><span class="n">MainLoop</span><span class="p">()</span>
 </pre></div>
@@ -4844,34 +4865,6 @@ window (using wx)</p></div>
 
             </div>
             <div class="item">
-            <p id="pyMez.Code.InstrumentControl.Instruments.HighSpeedOscope.resource" class="name">var <span class="ident">resource</span></p>
-            
-    <p class="inheritance">
-     <strong>Inheritance:</strong>
-       <code><a href="#pyMez.Code.InstrumentControl.Instruments.VisaInstrument">VisaInstrument</a></code>.<code><a href="#pyMez.Code.InstrumentControl.Instruments.VisaInstrument.resource">resource</a></code>
-    </p>
-
-            
-  
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
-            <p id="pyMez.Code.InstrumentControl.Instruments.HighSpeedOscope.resource_manager" class="name">var <span class="ident">resource_manager</span></p>
-            
-    <p class="inheritance">
-     <strong>Inheritance:</strong>
-       <code><a href="#pyMez.Code.InstrumentControl.Instruments.VisaInstrument">VisaInstrument</a></code>.<code><a href="#pyMez.Code.InstrumentControl.Instruments.VisaInstrument.resource_manager">resource_manager</a></code>
-    </p>
-
-            
-  
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
             <p id="pyMez.Code.InstrumentControl.Instruments.HighSpeedOscope.state_buffer" class="name">var <span class="ident">state_buffer</span></p>
             
     <p class="inheritance">
@@ -4940,10 +4933,16 @@ window (using wx)</p></div>
     
     <span class="bp">self</span><span class="o">.</span><span class="n">state_buffer</span><span class="o">=</span><span class="p">[]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">STATE_BUFFER_MAX_LENGTH</span><span class="o">=</span><span class="mi">10</span>
-    
-    <span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">=</span><span class="n">visa</span><span class="o">.</span><span class="n">ResourceManager</span><span class="p">()</span>
-    <span class="c1"># Call the visa instrument class-- this gives ask,write,read</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">=</span><span class="n">visa</span><span class="o">.</span><span class="n">ResourceManager</span><span class="p">()</span>
+        <span class="c1"># Call the visa instrument class-- this gives ask,write,read</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fake_mode</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Unable to load resource entering fake mode ...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="n">FakeInstrument</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">history</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fake_mode</span><span class="o">=</span><span class="bp">True</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span>
 </pre></div>
 
@@ -4981,7 +4980,7 @@ window (using wx)</p></div>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">text_node</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="n">tag_name</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">text_node</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">attribute_dictionary</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">attribute_dictionary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">new_attribute</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">creatAttribute</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">setAttributeNode</span><span class="p">(</span><span class="n">new_attribute</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
@@ -6129,22 +6128,22 @@ window (using wx)</p></div>
         <span class="k">return</span> <span class="n">tagName</span>
     <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">,</span><span class="s1">&#39;txt&#39;</span><span class="p">,</span><span class="s1">&#39;cmd line&#39;</span><span class="p">,</span><span class="s1">&#39;cmd&#39;</span><span class="p">]:</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s1">&#39;Entry&#39;</span><span class="p">):</span>
-            <span class="k">print</span> <span class="s1">&#39;Entry Index: </span><span class="si">%s</span><span class="s1"> </span><span class="se">\t</span><span class="s1">Date: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Index&#39;</span><span class="p">),</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">))</span>
-            <span class="k">print</span> <span class="n">node</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">nodeValue</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Entry Index: </span><span class="si">%s</span><span class="s1"> </span><span class="se">\t</span><span class="s1">Date: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Index&#39;</span><span class="p">),</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">)))</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">nodeValue</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;xml&#39;</span><span class="p">,</span><span class="n">mode</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s1">&#39;Entry&#39;</span><span class="p">):</span>
-            <span class="k">print</span> <span class="n">node</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">()</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">())</span>
     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;Window|wx&#39;</span><span class="p">,</span><span class="n">mode</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">wx</span>
-            <span class="kn">import</span> <span class="nn">wx.html</span>
+            <span class="kn">import</span> <span class="nn">wx.html2</span>
         <span class="k">except</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s1">&#39;Cannot locate wx, please add to sys.path&#39;</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Cannot locate wx, please add to sys.path&#39;</span><span class="p">)</span>
         <span class="n">app</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">App</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
         <span class="n">frame</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
-        <span class="n">html_window</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">HtmlWindow</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
-        <span class="n">html_window</span><span class="o">.</span><span class="n">SetPage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_HTML</span><span class="p">()))</span>
+        <span class="n">html_window</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">html2</span><span class="o">.</span><span class="n">WebView</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+        <span class="n">html_window</span><span class="o">.</span><span class="n">SetPage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_HTML</span><span class="p">()),</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">frame</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
         <span class="n">app</span><span class="o">.</span><span class="n">MainLoop</span><span class="p">()</span>
 </pre></div>
@@ -6373,34 +6372,6 @@ window (using wx)</p></div>
 
             </div>
             <div class="item">
-            <p id="pyMez.Code.InstrumentControl.Instruments.NRPPowerMeter.resource" class="name">var <span class="ident">resource</span></p>
-            
-    <p class="inheritance">
-     <strong>Inheritance:</strong>
-       <code><a href="#pyMez.Code.InstrumentControl.Instruments.PowerMeter">PowerMeter</a></code>.<code><a href="#pyMez.Code.InstrumentControl.Instruments.PowerMeter.resource">resource</a></code>
-    </p>
-
-            
-  
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
-            <p id="pyMez.Code.InstrumentControl.Instruments.NRPPowerMeter.resource_manager" class="name">var <span class="ident">resource_manager</span></p>
-            
-    <p class="inheritance">
-     <strong>Inheritance:</strong>
-       <code><a href="#pyMez.Code.InstrumentControl.Instruments.PowerMeter">PowerMeter</a></code>.<code><a href="#pyMez.Code.InstrumentControl.Instruments.PowerMeter.resource_manager">resource_manager</a></code>
-    </p>
-
-            
-  
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
             <p id="pyMez.Code.InstrumentControl.Instruments.NRPPowerMeter.state_buffer" class="name">var <span class="ident">state_buffer</span></p>
             
     <p class="inheritance">
@@ -6469,10 +6440,16 @@ window (using wx)</p></div>
     
     <span class="bp">self</span><span class="o">.</span><span class="n">state_buffer</span><span class="o">=</span><span class="p">[]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">STATE_BUFFER_MAX_LENGTH</span><span class="o">=</span><span class="mi">10</span>
-    
-    <span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">=</span><span class="n">visa</span><span class="o">.</span><span class="n">ResourceManager</span><span class="p">()</span>
-    <span class="c1"># Call the visa instrument class-- this gives ask,write,read</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">=</span><span class="n">visa</span><span class="o">.</span><span class="n">ResourceManager</span><span class="p">()</span>
+        <span class="c1"># Call the visa instrument class-- this gives ask,write,read</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fake_mode</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Unable to load resource entering fake mode ...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="n">FakeInstrument</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">history</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fake_mode</span><span class="o">=</span><span class="bp">True</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span>
 </pre></div>
 
@@ -6510,7 +6487,7 @@ window (using wx)</p></div>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">text_node</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="n">tag_name</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">text_node</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">attribute_dictionary</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">attribute_dictionary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">new_attribute</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">creatAttribute</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">setAttributeNode</span><span class="p">(</span><span class="n">new_attribute</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
@@ -7174,22 +7151,22 @@ window (using wx)</p></div>
         <span class="k">return</span> <span class="n">tagName</span>
     <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">,</span><span class="s1">&#39;txt&#39;</span><span class="p">,</span><span class="s1">&#39;cmd line&#39;</span><span class="p">,</span><span class="s1">&#39;cmd&#39;</span><span class="p">]:</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s1">&#39;Entry&#39;</span><span class="p">):</span>
-            <span class="k">print</span> <span class="s1">&#39;Entry Index: </span><span class="si">%s</span><span class="s1"> </span><span class="se">\t</span><span class="s1">Date: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Index&#39;</span><span class="p">),</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">))</span>
-            <span class="k">print</span> <span class="n">node</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">nodeValue</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Entry Index: </span><span class="si">%s</span><span class="s1"> </span><span class="se">\t</span><span class="s1">Date: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Index&#39;</span><span class="p">),</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">)))</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">nodeValue</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;xml&#39;</span><span class="p">,</span><span class="n">mode</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s1">&#39;Entry&#39;</span><span class="p">):</span>
-            <span class="k">print</span> <span class="n">node</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">()</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">())</span>
     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;Window|wx&#39;</span><span class="p">,</span><span class="n">mode</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">wx</span>
-            <span class="kn">import</span> <span class="nn">wx.html</span>
+            <span class="kn">import</span> <span class="nn">wx.html2</span>
         <span class="k">except</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s1">&#39;Cannot locate wx, please add to sys.path&#39;</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Cannot locate wx, please add to sys.path&#39;</span><span class="p">)</span>
         <span class="n">app</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">App</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
         <span class="n">frame</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
-        <span class="n">html_window</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">HtmlWindow</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
-        <span class="n">html_window</span><span class="o">.</span><span class="n">SetPage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_HTML</span><span class="p">()))</span>
+        <span class="n">html_window</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">html2</span><span class="o">.</span><span class="n">WebView</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+        <span class="n">html_window</span><span class="o">.</span><span class="n">SetPage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_HTML</span><span class="p">()),</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">frame</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
         <span class="n">app</span><span class="o">.</span><span class="n">MainLoop</span><span class="p">()</span>
 </pre></div>
@@ -7440,34 +7417,6 @@ window (using wx)</p></div>
 
             </div>
             <div class="item">
-            <p id="pyMez.Code.InstrumentControl.Instruments.PowerMeter.resource" class="name">var <span class="ident">resource</span></p>
-            
-    <p class="inheritance">
-     <strong>Inheritance:</strong>
-       <code><a href="#pyMez.Code.InstrumentControl.Instruments.VisaInstrument">VisaInstrument</a></code>.<code><a href="#pyMez.Code.InstrumentControl.Instruments.VisaInstrument.resource">resource</a></code>
-    </p>
-
-            
-  
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
-            <p id="pyMez.Code.InstrumentControl.Instruments.PowerMeter.resource_manager" class="name">var <span class="ident">resource_manager</span></p>
-            
-    <p class="inheritance">
-     <strong>Inheritance:</strong>
-       <code><a href="#pyMez.Code.InstrumentControl.Instruments.VisaInstrument">VisaInstrument</a></code>.<code><a href="#pyMez.Code.InstrumentControl.Instruments.VisaInstrument.resource_manager">resource_manager</a></code>
-    </p>
-
-            
-  
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
             <p id="pyMez.Code.InstrumentControl.Instruments.PowerMeter.state_buffer" class="name">var <span class="ident">state_buffer</span></p>
             
     <p class="inheritance">
@@ -7536,10 +7485,16 @@ window (using wx)</p></div>
     
     <span class="bp">self</span><span class="o">.</span><span class="n">state_buffer</span><span class="o">=</span><span class="p">[]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">STATE_BUFFER_MAX_LENGTH</span><span class="o">=</span><span class="mi">10</span>
-    
-    <span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">=</span><span class="n">visa</span><span class="o">.</span><span class="n">ResourceManager</span><span class="p">()</span>
-    <span class="c1"># Call the visa instrument class-- this gives ask,write,read</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">=</span><span class="n">visa</span><span class="o">.</span><span class="n">ResourceManager</span><span class="p">()</span>
+        <span class="c1"># Call the visa instrument class-- this gives ask,write,read</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fake_mode</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Unable to load resource entering fake mode ...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="n">FakeInstrument</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">history</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fake_mode</span><span class="o">=</span><span class="bp">True</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span>
 </pre></div>
 
@@ -7577,7 +7532,7 @@ window (using wx)</p></div>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">text_node</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="n">tag_name</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">text_node</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">attribute_dictionary</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">attribute_dictionary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">new_attribute</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">creatAttribute</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">setAttributeNode</span><span class="p">(</span><span class="n">new_attribute</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
@@ -8215,22 +8170,22 @@ window (using wx)</p></div>
         <span class="k">return</span> <span class="n">tagName</span>
     <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">,</span><span class="s1">&#39;txt&#39;</span><span class="p">,</span><span class="s1">&#39;cmd line&#39;</span><span class="p">,</span><span class="s1">&#39;cmd&#39;</span><span class="p">]:</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s1">&#39;Entry&#39;</span><span class="p">):</span>
-            <span class="k">print</span> <span class="s1">&#39;Entry Index: </span><span class="si">%s</span><span class="s1"> </span><span class="se">\t</span><span class="s1">Date: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Index&#39;</span><span class="p">),</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">))</span>
-            <span class="k">print</span> <span class="n">node</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">nodeValue</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Entry Index: </span><span class="si">%s</span><span class="s1"> </span><span class="se">\t</span><span class="s1">Date: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Index&#39;</span><span class="p">),</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">)))</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">nodeValue</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;xml&#39;</span><span class="p">,</span><span class="n">mode</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s1">&#39;Entry&#39;</span><span class="p">):</span>
-            <span class="k">print</span> <span class="n">node</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">()</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">())</span>
     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;Window|wx&#39;</span><span class="p">,</span><span class="n">mode</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">wx</span>
-            <span class="kn">import</span> <span class="nn">wx.html</span>
+            <span class="kn">import</span> <span class="nn">wx.html2</span>
         <span class="k">except</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s1">&#39;Cannot locate wx, please add to sys.path&#39;</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Cannot locate wx, please add to sys.path&#39;</span><span class="p">)</span>
         <span class="n">app</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">App</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
         <span class="n">frame</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
-        <span class="n">html_window</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">HtmlWindow</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
-        <span class="n">html_window</span><span class="o">.</span><span class="n">SetPage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_HTML</span><span class="p">()))</span>
+        <span class="n">html_window</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">html2</span><span class="o">.</span><span class="n">WebView</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+        <span class="n">html_window</span><span class="o">.</span><span class="n">SetPage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_HTML</span><span class="p">()),</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">frame</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
         <span class="n">app</span><span class="o">.</span><span class="n">MainLoop</span><span class="p">()</span>
 </pre></div>
@@ -8408,42 +8363,50 @@ stores the frequency points as Hz.</p></div>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
         <span class="n">VisaInstrument</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">power</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_power</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">IFBW</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_IFBW</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">frequency_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;frequency_units&quot;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="c1"># this should be if SENS:SWE:TYPE? is LIN or LOG</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sweep_type</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;LIN&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:START?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:STOP?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SWE:POIN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">number_points</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;LIN&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:START?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:STOP?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SWE:POIN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="n">logspace_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
-            <span class="n">logspace_stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ndigits</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">logspace_start</span><span class="p">,</span> <span class="n">logspace_stop</span><span class="p">,</span>
-                                                                                 <span class="n">num</span><span class="o">=</span><span class="n">number_points</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
-        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;SEG&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
-            <span class="n">number_segments</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM:COUN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_segments</span><span class="p">):</span>
-                <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:FREQ:START?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-                <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:FREQ:STOP?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-                <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:SWE:POIN?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-                <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">number_points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span> <span class="s2">&quot;stop&quot;</span><span class="p">:</span> <span class="n">stop</span><span class="p">,</span>
-                                             <span class="s2">&quot;number_points&quot;</span><span class="p">:</span> <span class="n">number_points</span><span class="p">,</span> <span class="s2">&quot;step&quot;</span><span class="p">:</span> <span class="n">step</span><span class="p">})</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span> <span class="o">=</span> <span class="n">fix_segment_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="p">)</span>
-                <span class="n">frequency_list</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="p">[:]:</span>
-                    <span class="n">new_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;stop&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;number_points&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-                    <span class="n">frequency_list</span> <span class="o">=</span> <span class="n">frequency_list</span> <span class="o">+</span> <span class="n">new_list</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="n">frequency_list</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fake_mode</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">power</span> <span class="o">=</span> <span class="o">-</span><span class="mi">20</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">IFBW</span> <span class="o">=</span> <span class="mi">10</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;frequency_units&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># this should be if SENS:SWE:TYPE? is LIN or LOG</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span> <span class="o">=</span><span class="s2">&quot;LIN&quot;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">power</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_power</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">IFBW</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_IFBW</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;frequency_units&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># this should be if SENS:SWE:TYPE? is LIN or LOG</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sweep_type</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;LIN&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:START?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:STOP?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SWE:POIN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">number_points</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;LIN&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:START?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:STOP?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SWE:POIN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="n">logspace_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+                <span class="n">logspace_stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ndigits</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">logspace_start</span><span class="p">,</span> <span class="n">logspace_stop</span><span class="p">,</span>
+                                                                                     <span class="n">num</span><span class="o">=</span><span class="n">number_points</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+            <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;SEG&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+                <span class="n">number_segments</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM:COUN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_segments</span><span class="p">):</span>
+                    <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:FREQ:START?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                    <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:FREQ:STOP?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                    <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:SWE:POIN?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                    <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">number_points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span> <span class="s2">&quot;stop&quot;</span><span class="p">:</span> <span class="n">stop</span><span class="p">,</span>
+                                                 <span class="s2">&quot;number_points&quot;</span><span class="p">:</span> <span class="n">number_points</span><span class="p">,</span> <span class="s2">&quot;step&quot;</span><span class="p">:</span> <span class="n">step</span><span class="p">})</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span> <span class="o">=</span> <span class="n">fix_segment_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="p">)</span>
+                    <span class="n">frequency_list</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="p">[:]:</span>
+                        <span class="n">new_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;stop&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;number_points&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                        <span class="n">frequency_list</span> <span class="o">=</span> <span class="n">frequency_list</span> <span class="o">+</span> <span class="n">new_list</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="n">frequency_list</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="nf">add_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">trace_name</span><span class="p">,</span><span class="n">trace_parameter</span><span class="p">,</span><span class="n">drive_port</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">display_trace</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Adds a single trace to the VNA. Trace parameters vary by instrument and can be ratios of</span>
@@ -8472,6 +8435,7 @@ stores the frequency points as Hz.</p></div>
         <span class="n">im_list</span><span class="o">=</span><span class="n">out_string</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">out_list</span><span class="o">=</span><span class="p">[[</span><span class="nb">float</span><span class="p">(</span><span class="n">real_parameter</span><span class="p">),</span><span class="nb">float</span><span class="p">(</span><span class="n">im_list</span><span class="p">[</span><span class="n">index</span><span class="p">])]</span> <span class="k">for</span> <span class="n">index</span><span class="p">,</span><span class="n">real_parameter</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">re_list</span><span class="p">)]</span>
         <span class="k">return</span> <span class="n">out_list</span>
+
     <span class="k">def</span> <span class="nf">trigger_sweep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Triggers a single sweep of the VNA, note you need to wait for the sweep to finish before reading the</span>
 <span class="sd">        values. It takes ~ #ports sourced*#points/IFBW &quot;&quot;&quot;</span>
@@ -8792,11 +8756,11 @@ stores the frequency points as Hz.</p></div>
             <span class="c1"># Set the Channel to have 2 Traces</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC1:PAR:COUN 2&quot;</span><span class="p">)</span>
             <span class="c1"># Trace 1 This is port 2 or Forward Switch Terms</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC1:PAR:DEF &#39;FWD&#39;,R2,1&quot;</span><span class="p">)</span>  <span class="c1"># note this command is different for vector star A2,B2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC1:PAR:DEF &#39;FWD&#39;,R2B,1&quot;</span><span class="p">)</span>  <span class="c1"># note this command is different for vector star A2,B2</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_switch_term_options</span><span class="p">[</span><span class="s2">&quot;view_trace&quot;</span><span class="p">]:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;DISPlay:WINDow1:TRACe5:FEED &#39;FWD&#39;&quot;</span><span class="p">)</span>
             <span class="c1"># Trace 2 This is port 1 or Reverse Switch Terms</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC1:PAR:DEF &#39;REV&#39;,R1,2&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC1:PAR:DEF &#39;REV&#39;,R1A,2&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_switch_term_options</span><span class="p">[</span><span class="s2">&quot;view_trace&quot;</span><span class="p">]:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;DISPlay:WINDow1:TRACe6:FEED &#39;REV&#39;&quot;</span><span class="p">)</span>
 
@@ -8811,11 +8775,11 @@ stores the frequency points as Hz.</p></div>
         <span class="c1"># Set the read format</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;FORM:ASC,0&quot;</span><span class="p">)</span>
         <span class="c1"># Read in the data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC:PAR:SEL FWD;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC:PAR:SEL &#39;FWD&#39;;&quot;</span><span class="p">)</span>
         <span class="n">foward_switch_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;CALC:DATA? SDATA&quot;</span><span class="p">)</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_busy</span><span class="p">():</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="o">.</span><span class="mo">01</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC:PAR:SEL REV;&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC:PAR:SEL &#39;REV&#39;;&quot;</span><span class="p">)</span>
         <span class="n">reverse_switch_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;CALC:DATA? SDATA&quot;</span><span class="p">)</span>
         <span class="c1"># Now parse the string</span>
         <span class="n">foward_switch_list</span> <span class="o">=</span> <span class="n">foward_switch_string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
@@ -9210,16 +9174,6 @@ stores the frequency points as Hz.</p></div>
           </ul>
           <h3>Instance variables</h3>
             <div class="item">
-            <p id="pyMez.Code.InstrumentControl.Instruments.VNA.IFBW" class="name">var <span class="ident">IFBW</span></p>
-            
-
-            
-  
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
             <p id="pyMez.Code.InstrumentControl.Instruments.VNA.STATE_BUFFER_MAX_LENGTH" class="name">var <span class="ident">STATE_BUFFER_MAX_LENGTH</span></p>
             
     <p class="inheritance">
@@ -9248,69 +9202,11 @@ stores the frequency points as Hz.</p></div>
 
             </div>
             <div class="item">
-            <p id="pyMez.Code.InstrumentControl.Instruments.VNA.frequency_table" class="name">var <span class="ident">frequency_table</span></p>
-            
-
-            
-  
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
-            <p id="pyMez.Code.InstrumentControl.Instruments.VNA.frequency_units" class="name">var <span class="ident">frequency_units</span></p>
-            
-
-            
-  
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
             <p id="pyMez.Code.InstrumentControl.Instruments.VNA.options" class="name">var <span class="ident">options</span></p>
             
     <p class="inheritance">
      <strong>Inheritance:</strong>
        <code><a href="#pyMez.Code.InstrumentControl.Instruments.VisaInstrument">VisaInstrument</a></code>.<code><a href="#pyMez.Code.InstrumentControl.Instruments.VisaInstrument.options">options</a></code>
-    </p>
-
-            
-  
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
-            <p id="pyMez.Code.InstrumentControl.Instruments.VNA.power" class="name">var <span class="ident">power</span></p>
-            
-
-            
-  
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
-            <p id="pyMez.Code.InstrumentControl.Instruments.VNA.resource" class="name">var <span class="ident">resource</span></p>
-            
-    <p class="inheritance">
-     <strong>Inheritance:</strong>
-       <code><a href="#pyMez.Code.InstrumentControl.Instruments.VisaInstrument">VisaInstrument</a></code>.<code><a href="#pyMez.Code.InstrumentControl.Instruments.VisaInstrument.resource">resource</a></code>
-    </p>
-
-            
-  
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
-            <p id="pyMez.Code.InstrumentControl.Instruments.VNA.resource_manager" class="name">var <span class="ident">resource_manager</span></p>
-            
-    <p class="inheritance">
-     <strong>Inheritance:</strong>
-       <code><a href="#pyMez.Code.InstrumentControl.Instruments.VisaInstrument">VisaInstrument</a></code>.<code><a href="#pyMez.Code.InstrumentControl.Instruments.VisaInstrument.resource_manager">resource_manager</a></code>
     </p>
 
             
@@ -9326,16 +9222,6 @@ stores the frequency points as Hz.</p></div>
      <strong>Inheritance:</strong>
        <code><a href="#pyMez.Code.InstrumentControl.Instruments.VisaInstrument">VisaInstrument</a></code>.<code><a href="#pyMez.Code.InstrumentControl.Instruments.VisaInstrument.state_buffer">state_buffer</a></code>
     </p>
-
-            
-  
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
-            <p id="pyMez.Code.InstrumentControl.Instruments.VNA.sweep_type" class="name">var <span class="ident">sweep_type</span></p>
-            
 
             
   
@@ -9370,42 +9256,50 @@ stores the frequency points as Hz.</p></div>
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
     <span class="n">VisaInstrument</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">power</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_power</span><span class="p">()</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">IFBW</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_IFBW</span><span class="p">()</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">frequency_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;frequency_units&quot;</span><span class="p">]</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="c1"># this should be if SENS:SWE:TYPE? is LIN or LOG</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sweep_type</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;LIN&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:START?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-        <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:STOP?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-        <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SWE:POIN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">number_points</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-    <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;LIN&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:START?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-        <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:STOP?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-        <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SWE:POIN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-        <span class="n">logspace_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
-        <span class="n">logspace_stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ndigits</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">logspace_start</span><span class="p">,</span> <span class="n">logspace_stop</span><span class="p">,</span>
-                                                                             <span class="n">num</span><span class="o">=</span><span class="n">number_points</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
-    <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;SEG&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
-        <span class="n">number_segments</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM:COUN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_segments</span><span class="p">):</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:FREQ:START?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:FREQ:STOP?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:SWE:POIN?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">number_points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span> <span class="s2">&quot;stop&quot;</span><span class="p">:</span> <span class="n">stop</span><span class="p">,</span>
-                                         <span class="s2">&quot;number_points&quot;</span><span class="p">:</span> <span class="n">number_points</span><span class="p">,</span> <span class="s2">&quot;step&quot;</span><span class="p">:</span> <span class="n">step</span><span class="p">})</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span> <span class="o">=</span> <span class="n">fix_segment_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="p">)</span>
-            <span class="n">frequency_list</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="p">[:]:</span>
-                <span class="n">new_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;stop&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;number_points&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-                <span class="n">frequency_list</span> <span class="o">=</span> <span class="n">frequency_list</span> <span class="o">+</span> <span class="n">new_list</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="n">frequency_list</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fake_mode</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">power</span> <span class="o">=</span> <span class="o">-</span><span class="mi">20</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">IFBW</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frequency_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;frequency_units&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># this should be if SENS:SWE:TYPE? is LIN or LOG</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span> <span class="o">=</span><span class="s2">&quot;LIN&quot;</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">power</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_power</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">IFBW</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_IFBW</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frequency_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s2">&quot;frequency_units&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># this should be if SENS:SWE:TYPE? is LIN or LOG</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sweep_type</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;LIN&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:START?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:STOP?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+            <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SWE:POIN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">number_points</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;LIN&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:START?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:FREQ:STOP?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+            <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SWE:POIN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+            <span class="n">logspace_start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+            <span class="n">logspace_stop</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ndigits</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">logspace_start</span><span class="p">,</span> <span class="n">logspace_stop</span><span class="p">,</span>
+                                                                                 <span class="n">num</span><span class="o">=</span><span class="n">number_points</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;SEG&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sweep_type</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
+            <span class="n">number_segments</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM:COUN?&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_segments</span><span class="p">):</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:FREQ:START?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="n">stop</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:FREQ:STOP?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="n">number_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;SENS:SEGM{0}:SWE:POIN?&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+                <span class="n">step</span> <span class="o">=</span> <span class="p">(</span><span class="n">stop</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">number_points</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="n">start</span><span class="p">,</span> <span class="s2">&quot;stop&quot;</span><span class="p">:</span> <span class="n">stop</span><span class="p">,</span>
+                                             <span class="s2">&quot;number_points&quot;</span><span class="p">:</span> <span class="n">number_points</span><span class="p">,</span> <span class="s2">&quot;step&quot;</span><span class="p">:</span> <span class="n">step</span><span class="p">})</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span> <span class="o">=</span> <span class="n">fix_segment_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="p">)</span>
+                <span class="n">frequency_list</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">frequency_table</span><span class="p">[:]:</span>
+                    <span class="n">new_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;stop&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;number_points&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                    <span class="n">frequency_list</span> <span class="o">=</span> <span class="n">frequency_list</span> <span class="o">+</span> <span class="n">new_list</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="n">frequency_list</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">frequency_list</span> <span class="o">=</span> <span class="p">[]</span>
 </pre></div>
 
   </div>
@@ -9522,7 +9416,7 @@ assumes port 1 and port 2 are being used. In addition, it assumes the B receiver
     <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">text_node</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="n">tag_name</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">text_node</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">attribute_dictionary</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">attribute_dictionary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">new_attribute</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">creatAttribute</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">setAttributeNode</span><span class="p">(</span><span class="n">new_attribute</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
@@ -10410,11 +10304,11 @@ set the option order= "PORT</p></div>
         <span class="c1"># Set the Channel to have 2 Traces</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC1:PAR:COUN 2&quot;</span><span class="p">)</span>
         <span class="c1"># Trace 1 This is port 2 or Forward Switch Terms</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC1:PAR:DEF &#39;FWD&#39;,R2,1&quot;</span><span class="p">)</span>  <span class="c1"># note this command is different for vector star A2,B2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC1:PAR:DEF &#39;FWD&#39;,R2B,1&quot;</span><span class="p">)</span>  <span class="c1"># note this command is different for vector star A2,B2</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_switch_term_options</span><span class="p">[</span><span class="s2">&quot;view_trace&quot;</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;DISPlay:WINDow1:TRACe5:FEED &#39;FWD&#39;&quot;</span><span class="p">)</span>
         <span class="c1"># Trace 2 This is port 1 or Reverse Switch Terms</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC1:PAR:DEF &#39;REV&#39;,R1,2&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC1:PAR:DEF &#39;REV&#39;,R1A,2&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measure_switch_term_options</span><span class="p">[</span><span class="s2">&quot;view_trace&quot;</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;DISPlay:WINDow1:TRACe6:FEED &#39;REV&#39;&quot;</span><span class="p">)</span>
     <span class="c1"># Select Channel</span>
@@ -10428,11 +10322,11 @@ set the option order= "PORT</p></div>
     <span class="c1"># Set the read format</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;FORM:ASC,0&quot;</span><span class="p">)</span>
     <span class="c1"># Read in the data</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC:PAR:SEL FWD;&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC:PAR:SEL &#39;FWD&#39;;&quot;</span><span class="p">)</span>
     <span class="n">foward_switch_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;CALC:DATA? SDATA&quot;</span><span class="p">)</span>
     <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_busy</span><span class="p">():</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="o">.</span><span class="mo">01</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC:PAR:SEL REV;&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CALC:PAR:SEL &#39;REV&#39;;&quot;</span><span class="p">)</span>
     <span class="n">reverse_switch_string</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;CALC:DATA? SDATA&quot;</span><span class="p">)</span>
     <span class="c1"># Now parse the string</span>
     <span class="n">foward_switch_list</span> <span class="o">=</span> <span class="n">foward_switch_string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
@@ -11115,22 +11009,22 @@ window (using wx)</p></div>
         <span class="k">return</span> <span class="n">tagName</span>
     <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">,</span><span class="s1">&#39;txt&#39;</span><span class="p">,</span><span class="s1">&#39;cmd line&#39;</span><span class="p">,</span><span class="s1">&#39;cmd&#39;</span><span class="p">]:</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s1">&#39;Entry&#39;</span><span class="p">):</span>
-            <span class="k">print</span> <span class="s1">&#39;Entry Index: </span><span class="si">%s</span><span class="s1"> </span><span class="se">\t</span><span class="s1">Date: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Index&#39;</span><span class="p">),</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">))</span>
-            <span class="k">print</span> <span class="n">node</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">nodeValue</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Entry Index: </span><span class="si">%s</span><span class="s1"> </span><span class="se">\t</span><span class="s1">Date: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Index&#39;</span><span class="p">),</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">)))</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">nodeValue</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;xml&#39;</span><span class="p">,</span><span class="n">mode</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s1">&#39;Entry&#39;</span><span class="p">):</span>
-            <span class="k">print</span> <span class="n">node</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">()</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">())</span>
     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;Window|wx&#39;</span><span class="p">,</span><span class="n">mode</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">wx</span>
-            <span class="kn">import</span> <span class="nn">wx.html</span>
+            <span class="kn">import</span> <span class="nn">wx.html2</span>
         <span class="k">except</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s1">&#39;Cannot locate wx, please add to sys.path&#39;</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Cannot locate wx, please add to sys.path&#39;</span><span class="p">)</span>
         <span class="n">app</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">App</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
         <span class="n">frame</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
-        <span class="n">html_window</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">HtmlWindow</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
-        <span class="n">html_window</span><span class="o">.</span><span class="n">SetPage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_HTML</span><span class="p">()))</span>
+        <span class="n">html_window</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">html2</span><span class="o">.</span><span class="n">WebView</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+        <span class="n">html_window</span><span class="o">.</span><span class="n">SetPage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_HTML</span><span class="p">()),</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">frame</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
         <span class="n">app</span><span class="o">.</span><span class="n">MainLoop</span><span class="p">()</span>
 </pre></div>
@@ -11346,13 +11240,15 @@ values. It takes ~ #ports sourced*#points/IFBW</p></div>
       
   
     <div class="desc"><p>General Class to communicate with COMM and GPIB instruments
-This is a blend of the pyvisa resource and an xml description.</p></div>
+This is a blend of the pyvisa resource and an xml description. If there is no device connected
+ enters into a fake mode. Where all the commands are logged as .history and the attribute fake_mode=True</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-pyMez.Code.InstrumentControl.Instruments.VisaInstrument', this);">Show source &equiv;</a></p>
   <div id="source-pyMez.Code.InstrumentControl.Instruments.VisaInstrument" class="source">
     <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">VisaInstrument</span><span class="p">(</span><span class="n">InstrumentSheet</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; General Class to communicate with COMM and GPIB instruments</span>
-<span class="sd">    This is a blend of the pyvisa resource and an xml description. &quot;&quot;&quot;</span>
+<span class="sd">    This is a blend of the pyvisa resource and an xml description. If there is no device connected</span>
+<span class="sd">     enters into a fake mode. Where all the commands are logged as .history and the attribute fake_mode=True&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">resource_name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="o">**</span><span class="n">options</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Initializes the VisaInstrument Class&quot;&quot;&quot;</span>
         <span class="n">defaults</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;state_directory&quot;</span><span class="p">:</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span>
@@ -11390,25 +11286,35 @@ This is a blend of the pyvisa resource and an xml description.</p></div>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">state_buffer</span><span class="o">=</span><span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">STATE_BUFFER_MAX_LENGTH</span><span class="o">=</span><span class="mi">10</span>
-        
-        <span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">=</span><span class="n">visa</span><span class="o">.</span><span class="n">ResourceManager</span><span class="p">()</span>
-        <span class="c1"># Call the visa instrument class-- this gives ask,write,read</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">=</span><span class="n">visa</span><span class="o">.</span><span class="n">ResourceManager</span><span class="p">()</span>
+            <span class="c1"># Call the visa instrument class-- this gives ask,write,read</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fake_mode</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Unable to load resource entering fake mode ...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="n">FakeInstrument</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">history</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fake_mode</span><span class="o">=</span><span class="bp">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span>
         
 
     <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">command</span><span class="p">):</span>
         <span class="s2">&quot;Writes command to instrument&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;Reads from the instrument&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
     <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">command</span><span class="p">):</span>
         <span class="s2">&quot;Writes command and then reads a response&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">ask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">command</span><span class="p">):</span>
         <span class="s2">&quot;Writes command and then reads a response&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">set_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">state_dictionary</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">state_table</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Sets the instrument to the state specified by Command:Value pairs&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">state_dictionary</span><span class="p">:</span>
@@ -11551,26 +11457,6 @@ This is a blend of the pyvisa resource and an xml description.</p></div>
 
             </div>
             <div class="item">
-            <p id="pyMez.Code.InstrumentControl.Instruments.VisaInstrument.resource" class="name">var <span class="ident">resource</span></p>
-            
-
-            
-  
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
-            <p id="pyMez.Code.InstrumentControl.Instruments.VisaInstrument.resource_manager" class="name">var <span class="ident">resource_manager</span></p>
-            
-
-            
-  
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
             <p id="pyMez.Code.InstrumentControl.Instruments.VisaInstrument.state_buffer" class="name">var <span class="ident">state_buffer</span></p>
             
 
@@ -11631,10 +11517,16 @@ This is a blend of the pyvisa resource and an xml description.</p></div>
     
     <span class="bp">self</span><span class="o">.</span><span class="n">state_buffer</span><span class="o">=</span><span class="p">[]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">STATE_BUFFER_MAX_LENGTH</span><span class="o">=</span><span class="mi">10</span>
-    
-    <span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">=</span><span class="n">visa</span><span class="o">.</span><span class="n">ResourceManager</span><span class="p">()</span>
-    <span class="c1"># Call the visa instrument class-- this gives ask,write,read</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">=</span><span class="n">visa</span><span class="o">.</span><span class="n">ResourceManager</span><span class="p">()</span>
+        <span class="c1"># Call the visa instrument class-- this gives ask,write,read</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource_manager</span><span class="o">.</span><span class="n">open_resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fake_mode</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Unable to load resource entering fake mode ...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">=</span><span class="n">FakeInstrument</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">instrument_address</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">resource</span><span class="o">.</span><span class="n">history</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fake_mode</span><span class="o">=</span><span class="bp">True</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">current_state</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span>
 </pre></div>
 
@@ -11668,7 +11560,7 @@ This is a blend of the pyvisa resource and an xml description.</p></div>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
         <span class="n">text_node</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="n">tag_name</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">text_node</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">attribute_dictionary</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">value</span> <span class="ow">in</span> <span class="n">attribute_dictionary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">new_attribute</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">creatAttribute</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">setAttributeNode</span><span class="p">(</span><span class="n">new_attribute</span><span class="p">)</span>
         <span class="n">new_entry</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
@@ -12104,22 +11996,22 @@ window (using wx)</p></div>
         <span class="k">return</span> <span class="n">tagName</span>
     <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">,</span><span class="s1">&#39;txt&#39;</span><span class="p">,</span><span class="s1">&#39;cmd line&#39;</span><span class="p">,</span><span class="s1">&#39;cmd&#39;</span><span class="p">]:</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s1">&#39;Entry&#39;</span><span class="p">):</span>
-            <span class="k">print</span> <span class="s1">&#39;Entry Index: </span><span class="si">%s</span><span class="s1"> </span><span class="se">\t</span><span class="s1">Date: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Index&#39;</span><span class="p">),</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">))</span>
-            <span class="k">print</span> <span class="n">node</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">nodeValue</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Entry Index: </span><span class="si">%s</span><span class="s1"> </span><span class="se">\t</span><span class="s1">Date: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Index&#39;</span><span class="p">),</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">getAttribute</span><span class="p">(</span><span class="s1">&#39;Date&#39;</span><span class="p">)))</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">nodeValue</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;xml&#39;</span><span class="p">,</span><span class="n">mode</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">document</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s1">&#39;Entry&#39;</span><span class="p">):</span>
-            <span class="k">print</span> <span class="n">node</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">()</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">())</span>
     <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;Window|wx&#39;</span><span class="p">,</span><span class="n">mode</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">wx</span>
-            <span class="kn">import</span> <span class="nn">wx.html</span>
+            <span class="kn">import</span> <span class="nn">wx.html2</span>
         <span class="k">except</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s1">&#39;Cannot locate wx, please add to sys.path&#39;</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Cannot locate wx, please add to sys.path&#39;</span><span class="p">)</span>
         <span class="n">app</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">App</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
         <span class="n">frame</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
-        <span class="n">html_window</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">HtmlWindow</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
-        <span class="n">html_window</span><span class="o">.</span><span class="n">SetPage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_HTML</span><span class="p">()))</span>
+        <span class="n">html_window</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">html2</span><span class="o">.</span><span class="n">WebView</span><span class="o">.</span><span class="n">New</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+        <span class="n">html_window</span><span class="o">.</span><span class="n">SetPage</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_HTML</span><span class="p">()),</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">frame</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
         <span class="n">app</span><span class="o">.</span><span class="n">MainLoop</span><span class="p">()</span>
 </pre></div>
@@ -12710,6 +12602,14 @@ window (using wx)</p></div>
       </div>
       <div class="item">
       <p id="pyMez.Code.InstrumentControl.Instruments.VNA_FREQUENCY_UNIT_MULTIPLIERS" class="name">var <span class="ident">VNA_FREQUENCY_UNIT_MULTIPLIERS</span></p>
+      
+  
+  <div class="source_cont">
+</div>
+
+      </div>
+      <div class="item">
+      <p id="pyMez.Code.InstrumentControl.Instruments.type_names" class="name">var <span class="ident">type_names</span></p>
       
   
   <div class="source_cont">
