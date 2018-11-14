@@ -116,11 +116,14 @@ def whos_there():
     gpib_resources=[]
     gpib_idn_dictionary={}
     for instrument in resource_list:
-        if re.search("GPIB",instrument,re.IGNORECASE):
-            resource=resource_manager.open_resource(instrument)
-            gpib_resources.append(resource)
-            idn=resource.query("*IDN?")
-            gpib_idn_dictionary[instrument]=idn
+        if re.search("GPIB|USB",instrument,re.IGNORECASE):
+            try:
+                resource=resource_manager.open_resource(instrument)
+                gpib_resources.append(resource)
+                idn=resource.query("*IDN?")
+                gpib_idn_dictionary[instrument]=idn
+            except:
+                print("{0} did not respond to idn query".format(instrument))
     if gpib_resources:
         for instrument_name,idn in gpib_idn_dictionary.items():
             print(("{0} is at address {1}".format(idn,instrument_name)))
