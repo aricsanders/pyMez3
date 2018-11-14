@@ -208,6 +208,8 @@ class FunctionalModel(object):
         fit_parameter_dictionary={parameter:fit_parameters[index] for index,parameter in enumerate(self.parameters)}
         self.set_parameters(fit_parameter_dictionary)
 
+        self.__div__=self.__truediv__
+
     def __add__(self,other):
         """Defines addition for the class, if it is another functional model add the models else just change the
         equation"""
