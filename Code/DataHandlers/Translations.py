@@ -244,8 +244,11 @@ def String_to_DownloadLink(string,**options):
         link_options[key]=value
     if not isinstance(string,str):
         string=str(string)
-    string=string.encode()
-    base_64=base64.b64encode(string).decode()
+    try:
+        string=string.encode()
+        base_64 = base64.b64encode(string).decode()
+    except:
+        base_64 = base64.b64encode(string)
     out_text="<a href='data:{0};base64,{1}' download = '{2}'>{3}</a>".format(link_options["mime_type"],
                                                                                     base_64,
                                                                                     link_options["suggested_name"],
@@ -260,7 +263,10 @@ def DownloadLink_to_String(download_link):
 
     if re.search(encoded_pattern, download_link):
         encoded_data = re.search(encoded_pattern, download_link).groupdict()["encoded_text"]
-        decoded_data = base64.b64decode(bytes(encoded_data))
+        try:
+            decoded_data = base64.b64decode(bytes(encoded_data))
+        except:
+            decoded_data = base64.b64decode(encoded_data)
         return decoded_data
     else:
         print("Could Not Decode Link")
@@ -277,7 +283,10 @@ def String_to_SVGAnchorLinkElement(string,**options):
         link_options[key]=value
     if not isinstance(string,str):
         string=str(string)
-    base_64=base64.b64encode(string.encode()).decode()
+    try:
+        base_64=base64.b64encode(string.encode()).decode()
+    except:
+        base_64 = base64.b64encode(string.encode())
     data_uri="data:{0};base64,{1}".format(link_options["mime_type"],base_64)
     anchor_dictionary={"tag":"a","xlink:href":data_uri,"xlink:download":link_options["suggested_name"]}
     out_element=make_html_element(**anchor_dictionary)

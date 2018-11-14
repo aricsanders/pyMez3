@@ -741,7 +741,7 @@ class VNA(VisaInstrument):
 
     def initialize(self, **options):
         """Intializes the system"""
-        defaults = {"reset": True}
+        defaults = {"reset": False}
         initialize_options = {}
         for key, value in defaults.items():
             initialize_options[key] = value
@@ -1079,7 +1079,14 @@ class VNA(VisaInstrument):
         while self.is_busy():
             time.sleep(.01)
         s22_string = self.query('CALC:DATA? SDATA')
-        # String Parsing
+
+        # String Parsing, Vector star specific, but no harm to Keysight, Rohde
+        s11_string=re.sub("#\d+\n","",s11_string)
+        s12_string=re.sub("#\d+\n","",s12_string)
+        s21_string=re.sub("#\d+\n","",s21_string)
+        s22_string=re.sub("#\d+\n","",s22_string)
+
+
         s11_list = s11_string.replace("\n", "").split(",")
         s12_list = s12_string.replace("\n", "").split(",")
         s21_list = s21_string.replace("\n", "").split(",")
@@ -1108,9 +1115,10 @@ class VNA(VisaInstrument):
         s2p = S2PV1(None, option_line=option_line, data=sparameter_data)
         s2p.change_frequency_units(self.frequency_units)
         return s2p
+
     def initialize_w2p(self,**options):
         """Initializes the system for w2p acquisition"""
-        defaults = {"reset": True, "port1": 1,"port2":2, "b_name_list": ["A", "B", "C", "D"]}
+        defaults = {"reset": False, "port1": 1,"port2":2, "b_name_list": ["A", "B", "C", "D"]}
         initialize_options = {}
         for key, value in defaults.items():
             initialize_options[key] = value
@@ -1163,7 +1171,7 @@ class VNA(VisaInstrument):
 
     def initialize_w1p(self, **options):
         """Initializes the system for w1p acquisition, default works for ZVA"""
-        defaults = {"reset": True, "port": 1, "b_name_list": ["A", "B", "C", "D"],"source_port":1}
+        defaults = {"reset": False, "port": 1, "b_name_list": ["A", "B", "C", "D"],"source_port":1}
         initialize_options = {}
         for key, value in defaults.items():
             initialize_options[key] = value
@@ -1268,7 +1276,7 @@ class VNA(VisaInstrument):
         # Set the format to ascii and set up sweep definitions
         self.write('FORM:ASC,0')
         # First get the A and Blists
-        self.write('CALC:PAR:SEL A{0}_D{0}'.format(self.measure_w1p_options["port"]))
+        self.write('CALC:PAR:SEL "A{0}_D{0}"'.format(self.measure_w1p_options["port"]))
         self.write('CALC:FORM MLIN')
         while self.is_busy():
             time.sleep(.01)
@@ -1339,7 +1347,7 @@ class VNA(VisaInstrument):
         # now get data for all of them
         all_wave_raw_string=[]
         for waveparameter in waveparameter_names:
-            self.write('CALC:PAR:SEL {0}'.format(waveparameter))
+            self.write('CALC:PAR:SEL "{0}"'.format(waveparameter))
             self.write('CALC:FORM MLIN')
             while self.is_busy():
                 time.sleep(.01)

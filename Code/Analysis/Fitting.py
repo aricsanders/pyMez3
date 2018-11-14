@@ -208,12 +208,14 @@ class FunctionalModel(object):
         fit_parameter_dictionary={parameter:fit_parameters[index] for index,parameter in enumerate(self.parameters)}
         self.set_parameters(fit_parameter_dictionary)
 
-        self.__div__=self.__truediv__
+
+    def __div__(self, other):
+        return self.__truediv__(other)
 
     def __add__(self,other):
         """Defines addition for the class, if it is another functional model add the models else just change the
         equation"""
-        if type(other) in [FunctionalModel]:
+        if isinstance(other,FunctionalModel):
             parameters=list(set(self.parameters+other.parameters))
             variables=list(set(self.variables+other.variables))
             #print("{0} is {1}".format("parameters",parameters))
@@ -228,7 +230,7 @@ class FunctionalModel(object):
         return new_function
     def __sub__(self,other):
         """Defines subtraction for the class"""
-        if type(other) in [FunctionalModel]:
+        if isinstance(other,FunctionalModel):
             parameters=list(set(self.parameters+other.parameters))
             variables=list(set(self.variables+other.variables))
             #print("{0} is {1}".format("parameters",parameters))
@@ -243,7 +245,7 @@ class FunctionalModel(object):
         return new_function
     def __mul__(self,other):
         """Defines multiplication for the class"""
-        if type(other) in [FunctionalModel]:
+        if isinstance(other,FunctionalModel):
             parameters=list(set(self.parameters+other.parameters))
             variables=list(set(self.variables+other.variables))
             #print("{0} is {1}".format("parameters",parameters))
@@ -259,7 +261,7 @@ class FunctionalModel(object):
 
     def __pow__(self,other):
         """Defines power for the class"""
-        if type(other) in [FunctionalModel]:
+        if isinstance(other,FunctionalModel):
             parameters=list(set(self.parameters+other.parameters))
             variables=list(set(self.variables+other.variables))
             #print("{0} is {1}".format("parameters",parameters))
@@ -275,7 +277,7 @@ class FunctionalModel(object):
 
     def __truediv__(self,other):
         """Defines division for the class"""
-        if type(other) in [FunctionalModel]:
+        if isinstance(other,FunctionalModel):
             parameters=list(set(self.parameters+other.parameters))
             variables=list(set(self.variables+other.variables))
             #print("{0} is {1}".format("parameters",parameters))
