@@ -613,7 +613,7 @@ class CheckStandardReport(HTMLReport):
                                                     mime_type="text/plain",
                                                     suggested_name=add_options["download_files_base_names"][index],
                                                     text=add_options["download_files_base_names"][index])
-            print(("{0} is {1}".format("index", index)))
+            #print(("{0} is {1}".format("index", index)))
             table_graph.set_state("AsciiDataTable", download)
 
             download_links = TableGraph_to_Links(table_graph,

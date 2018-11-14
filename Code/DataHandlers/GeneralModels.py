@@ -430,7 +430,6 @@ def read_schema(file_path, format=None):
             schema_bytes = pickle.load(open(file_path, 'rb'), encoding='bytes')
             schema = {}
             for key, value in schema_bytes.items():
-
                 if isinstance(value, bytes):
                     schema[key.decode()] = value.decode()
                 elif isinstance(value, list):
