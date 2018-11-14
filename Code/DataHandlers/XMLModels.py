@@ -197,7 +197,10 @@ def make_xml_string(tag,text=None,**attribute_dictionary):
     if text:
         position_arguments.append(text)
     new_tag=lxml.builder.E(*position_arguments,**attribute_dictionary)
-    out_text=lxml.etree.tostring(new_tag)
+    try:
+        out_text = lxml.etree.tostring(new_tag).decode()
+    except:
+        out_text=lxml.etree.tostring(new_tag)
     return out_text
 
 def dictionary_to_xml(dictionary=None,char_between='\n'):
@@ -393,10 +396,19 @@ class XMLBase():
         For example: XMLBase[".//BeforeCalibration/Item/SubItem[@Index='6']"] will return all of the elements
         with index=6. This is a thin wrapper of etree.findall"""
         out=self.etree.findall(item)
+
         if len(out)==1:
-            return etree.tostring(out[0])
+            try:
+                string_out=etree.tostring(out[0]).decode()
+            except:
+                string_out = etree.tostring(out[0])
+            return string_out
         else:
-            return [etree.tostring(x) for x in out]
+            try:
+              out_list= [etree.tostring(x).decode() for x in out]
+            except:
+              out_list= [etree.tostring(x) for x in out]
+            return out_list
 
     def update_etree(self):
         "Updates the attribute etree. Should be called anytime the xml content is changed"
