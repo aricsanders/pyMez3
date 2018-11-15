@@ -1,10 +1,10 @@
 # pyMez
-###[Documentation](https://aricsanders.github.io/)
+### [Documentation](https://aricsanders.github.io/)
 Measurement, Analysis and Data Management Software. To load the API interface use from pyMez import *.
 Should work on both python2.7 and python3.+
 
-###[pypi repository](https://pypi.org/project/pyMez/)
-###[github](https://github.com/aricsanders/pyMez)
+### [pypi repository](https://pypi.org/project/pyMez/)
+### [github](https://github.com/aricsanders/pyMez)
 
 Installation using pip
 ----------------------
